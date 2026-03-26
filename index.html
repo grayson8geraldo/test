@@ -637,18 +637,64 @@
                     </div>
                     <div class="price-card__price">
                         <span class="price-card__current">1 990 <small>&#8381;</small></span>
-                        <span class="price-card__per">+ стоимость доставки</span>
                     </div>
+                    <p class="price-card__delivery-note">* цена за&nbsp;книгу без&nbsp;учёта доставки</p>
                     <ul class="price-card__features">
                         <li class="included">Книга в&nbsp;твёрдом переплёте, 476 стр.</li>
                         <li class="included">1 048 фото, 135 рисунков, 7 таблиц</li>
                         <li class="included">Крупный шрифт, чёткие иллюстрации</li>
                         <li class="included">8 глав: от&nbsp;геологии до&nbsp;забора</li>
-                        <li class="included">Доставка СДЭК по&nbsp;всей России</li>
-                        <li class="included">Доставка через Авито</li>
                     </ul>
-                    <a href="#" class="btn btn--primary btn--full btn--pulse">Заказать книгу</a>
-                    <div class="price-card__note">Отправка в&nbsp;течение 2&ndash;3 дней после оплаты</div>
+
+                    <!-- Выбор способа доставки -->
+                    <div class="delivery-choice" id="deliveryChoice">
+                        <h4 class="delivery-choice__title">Выберите способ доставки:</h4>
+                        <label class="delivery-option delivery-option--active" id="optionCdek">
+                            <input type="radio" name="delivery" value="cdek" checked>
+                            <span class="delivery-option__radio"></span>
+                            <div class="delivery-option__content">
+                                <strong>СДЭК</strong>
+                                <span>Доставка транспортной компанией по&nbsp;всей России</span>
+                            </div>
+                        </label>
+                        <label class="delivery-option" id="optionAvito">
+                            <input type="radio" name="delivery" value="avito">
+                            <span class="delivery-option__radio"></span>
+                            <div class="delivery-option__content">
+                                <strong>Авито Доставка</strong>
+                                <span>Если у&nbsp;вас есть аккаунт Авито</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Форма СДЭК -->
+                    <form class="order-form" id="orderFormCdek">
+                        <div class="order-form__field">
+                            <input type="text" name="name" placeholder="Ваше имя" required class="order-form__input" id="orderName">
+                        </div>
+                        <div class="order-form__field">
+                            <input type="tel" name="phone" placeholder="Телефон" required class="order-form__input" id="orderPhone">
+                        </div>
+                        <div class="order-form__field">
+                            <input type="email" name="email" placeholder="Email" required class="order-form__input" id="orderEmail">
+                        </div>
+                        <div class="order-form__field">
+                            <input type="text" name="city" placeholder="Город" required class="order-form__input" id="orderCity">
+                        </div>
+                        <div class="order-form__field">
+                            <select name="cdek_point" class="order-form__input" id="orderCdekPoint">
+                                <option value="">Пункт выдачи СДЭК (заполните город)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn--primary btn--full btn--pulse">Оплатить и заказать</button>
+                        <p class="order-form__note">Отправка в&nbsp;течение 2&ndash;3 дней после оплаты</p>
+                    </form>
+
+                    <!-- Кнопка Авито (скрыта по умолчанию) -->
+                    <div class="order-avito" id="orderAvito" style="display:none;">
+                        <p class="order-avito__text">Вы&nbsp;будете перенаправлены на&nbsp;страницу книги на&nbsp;Авито, где сможете оформить заказ через Авито&nbsp;Доставку.</p>
+                        <a href="#" class="btn btn--primary btn--full" id="avitoLink" target="_blank" rel="noopener">Перейти на Авито</a>
+                    </div>
                 </div>
             </div>
             <!-- Способы оплаты -->
