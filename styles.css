@@ -419,7 +419,12 @@ select.order-form__input{appearance:none;background-image:url("data:image/svg+xm
 .order-form__note{font-size:12px;color:var(--c-text-light);text-align:center;margin-top:4px}
 
 /* CDEK map widget */
-#cdek-map{width:100%;height:400px;border-radius:var(--r-sm);overflow:hidden;margin-bottom:12px;border:2px solid var(--c-border)}
+.cdek-search{display:flex;gap:0}
+.cdek-search .order-form__input{border-radius:var(--r-sm) 0 0 var(--r-sm);border-right:none}
+.cdek-search__btn{padding:0 16px;background:var(--c-accent);color:#fff;border:2px solid var(--c-accent);border-radius:0 var(--r-sm) var(--r-sm) 0;cursor:pointer;transition:background .2s;display:flex;align-items:center}
+.cdek-search__btn:hover{background:var(--c-accent-dark);border-color:var(--c-accent-dark)}
+.cdek-map-wrapper{margin-top:12px}
+#cdek-map{width:100%;height:400px;border-radius:var(--r-sm);overflow:hidden;border:2px solid var(--c-border)}
 .cdek-selected{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(39,174,96,0.06);border:1px solid var(--c-success);border-radius:var(--r-sm);margin-top:8px;font-size:13px;color:var(--c-text)}
 .cdek-selected__icon{color:var(--c-success);font-weight:bold;font-size:16px}
 .cdek-selected__text{flex:1;line-height:1.4}

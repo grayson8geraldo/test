@@ -197,70 +197,124 @@ function initDeliveryChoice() {
         });
     });
 
-    // CDEK map widget
-    initCdekWidget();
+    // CDEK map on Yandex Maps
+    initCdekYandexMap();
 }
 
-// ===== CDEK PICKUP POINT WIDGET =====
-function initCdekWidget() {
-    const openBtn = document.getElementById('openCdekMap');
-    const changeBtn = document.getElementById('changeCdekPoint');
-    const mapContainer = document.getElementById('cdek-map');
+// ===== CDEK PICKUP POINTS ON YANDEX MAP =====
+function initCdekYandexMap() {
+    const searchInput = document.getElementById('cdekAddressSearch');
+    const searchBtn = document.getElementById('cdekSearchBtn');
+    const mapWrapper = document.getElementById('cdekMapWrapper');
     const selectedBlock = document.getElementById('cdekSelected');
     const selectedText = document.getElementById('cdekSelectedText');
-    const codeInput = document.getElementById('orderCdekPointCode');
     const addressInput = document.getElementById('orderCdekPointAddress');
+    const changeBtn = document.getElementById('changeCdekPoint');
 
-    if (!openBtn || !mapContainer) return;
+    if (!searchInput || !mapWrapper) return;
 
-    let widgetInstance = null;
+    let myMap = null;
+    let isMapReady = false;
 
-    function openMap() {
-        mapContainer.style.display = 'block';
-        openBtn.style.display = 'none';
+    function showMap(coords, zoom) {
+        mapWrapper.style.display = 'block';
 
-        if (!widgetInstance) {
-            // Инициализация виджета СДЭК
-            // Документация: https://github.com/cdek-it/widget
-            // TODO: заменить YOUR_CDEK_API_KEY на реальный ключ из ЛК СДЭК
-            widgetInstance = new CDEKWidget({
-                from: 'Москва',          // город отправки (город автора)
-                root: 'cdek-map',
-                apiKey: 'YOUR_CDEK_API_KEY', // API-ключ из ЛК СДЭК
-                servicePath: '',          // URL вашего бэкенд-прокси (если нужен)
-                defaultLocation: 'Москва',
-                lang: 'rus',
-                currency: 'RUB',
-                tariffs: {
-                    office: [234, 136],   // тарифы ПВЗ: Экономичный, Посылка склад-склад
-                    door: [233, 137],     // тарифы до двери
-                },
-                goods: [
-                    {
-                        width: 22,        // ширина книги, см
-                        height: 29,       // высота, см
-                        length: 4,        // толщина, см
-                        weight: 1.5       // вес, кг (примерный для книги 476 стр.)
-                    }
-                ],
-                onChoose: function(deliveryType, tariff, address) {
-                    // Пользователь выбрал пункт выдачи или адрес доставки
-                    codeInput.value = address.code || '';
-                    addressInput.value = address.address || '';
-                    selectedText.textContent = address.address || 'Пункт выбран';
-                    selectedBlock.style.display = 'flex';
-                    mapContainer.style.display = 'none';
-                    openBtn.style.display = 'none';
-                }
+        if (!myMap) {
+            ymaps.ready(function () {
+                myMap = new ymaps.Map('cdek-map', {
+                    center: coords || [55.76, 37.64],
+                    zoom: zoom || 12,
+                    controls: ['zoomControl', 'geolocationControl']
+                });
+                isMapReady = true;
+                searchCdekPoints(coords || [55.76, 37.64]);
             });
+        } else {
+            myMap.setCenter(coords, zoom || 12);
+            searchCdekPoints(coords);
         }
     }
 
-    openBtn.addEventListener('click', openMap);
+    function searchCdekPoints(coords) {
+        if (!myMap) return;
+
+        // Удаляем старые метки
+        myMap.geoObjects.removeAll();
+
+        // Ищем пункты СДЭК через Яндекс.Поиск по организациям
+        var searchControl = new ymaps.control.SearchControl({
+            options: { provider: 'yandex#search', noPlacemark: true }
+        });
+
+        ymaps.geocode(coords).then(function (res) {
+            var cityName = '';
+            var geoObj = res.geoObjects.get(0);
+            if (geoObj) {
+                var addrParts = geoObj.getLocalities();
+                cityName = addrParts.length ? addrParts[0] : geoObj.getAdministrativeAreas()[0] || '';
+            }
+
+            // Поиск пунктов СДЭК в этом районе
+            var searchQuery = 'СДЭК пункт выдачи' + (cityName ? ' ' + cityName : '');
+            ymaps.search(searchQuery, {
+                boundedBy: myMap.getBounds(),
+                strictBounds: false,
+                results: 50
+            }).then(function (searchRes) {
+                searchRes.geoObjects.events.add('click', function (e) {
+                    var target = e.get('target');
+                    var address = target.properties.get('text') || target.properties.get('name') || '';
+                    selectPoint(address);
+                });
+                myMap.geoObjects.add(searchRes.geoObjects);
+            });
+        });
+
+        // Добавляем метку пользователя
+        var userPlacemark = new ymaps.Placemark(coords, {
+            iconCaption: 'Вы здесь'
+        }, {
+            preset: 'islands#redCircleDotIcon'
+        });
+        myMap.geoObjects.add(userPlacemark);
+    }
+
+    function selectPoint(address) {
+        addressInput.value = address;
+        selectedText.textContent = address;
+        selectedBlock.style.display = 'flex';
+        mapWrapper.style.display = 'none';
+    }
+
+    function doSearch() {
+        var query = searchInput.value.trim();
+        if (!query) return;
+
+        ymaps.ready(function () {
+            ymaps.geocode(query).then(function (res) {
+                var firstResult = res.geoObjects.get(0);
+                if (firstResult) {
+                    var coords = firstResult.geometry.getCoordinates();
+                    showMap(coords, 14);
+                } else {
+                    showMap([55.76, 37.64], 10);
+                }
+            });
+        });
+    }
+
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            doSearch();
+        }
+    });
+
     if (changeBtn) {
-        changeBtn.addEventListener('click', () => {
+        changeBtn.addEventListener('click', function () {
             selectedBlock.style.display = 'none';
-            mapContainer.style.display = 'block';
+            mapWrapper.style.display = 'block';
         });
     }
 }
@@ -289,7 +343,6 @@ function initOrderForm() {
         const phone = document.getElementById('orderPhone').value.trim();
         const email = document.getElementById('orderEmail').value.trim();
         const city = document.getElementById('orderCity').value.trim();
-        const cdekPointCode = document.getElementById('orderCdekPointCode').value;
         const cdekPointAddress = document.getElementById('orderCdekPointAddress').value;
 
         if (!name || !phone || !email || !city) {
@@ -297,8 +350,8 @@ function initOrderForm() {
             return;
         }
 
-        if (!cdekPointCode && !cdekPointAddress) {
-            alert('Пожалуйста, выберите пункт выдачи СДЭК');
+        if (!cdekPointAddress) {
+            alert('Пожалуйста, выберите пункт выдачи СДЭК на карте');
             return;
         }
 
@@ -311,7 +364,6 @@ function initOrderForm() {
             'Shp_phone': phone,
             'Shp_email': email,
             'Shp_city': city,
-            'Shp_cdek_point': cdekPointCode,
             'Shp_cdek_address': cdekPointAddress,
         };
 
