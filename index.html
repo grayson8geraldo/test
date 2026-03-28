@@ -643,23 +643,23 @@
                     </div>
 
                     <!-- Форма СДЭК -->
-                    <form class="order-form" id="orderFormCdek">
+                    <form class="order-form" id="orderFormCdek" novalidate>
                         <div class="order-form__field">
-                            <input type="text" name="name" placeholder="Ваше имя" required class="order-form__input" id="orderName">
+                            <input type="text" name="name" placeholder="Ваше имя" required class="order-form__input" id="orderName" autocomplete="name" pattern="[A-Za-zА-Яа-яЁё\s\-]{2,50}">
+                            <span class="order-form__error" id="errorName"></span>
                         </div>
                         <div class="order-form__field">
-                            <input type="tel" name="phone" placeholder="Телефон" required class="order-form__input" id="orderPhone">
+                            <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" required class="order-form__input" id="orderPhone" autocomplete="tel">
+                            <span class="order-form__error" id="errorPhone"></span>
                         </div>
                         <div class="order-form__field">
-                            <input type="email" name="email" placeholder="Email" required class="order-form__input" id="orderEmail">
-                        </div>
-                        <div class="order-form__field">
-                            <input type="text" name="city" placeholder="Город" required class="order-form__input" id="orderCity">
+                            <input type="email" name="email" placeholder="Email" required class="order-form__input" id="orderEmail" autocomplete="email">
+                            <span class="order-form__error" id="errorEmail"></span>
                         </div>
                         <div class="order-form__field">
                             <input type="hidden" name="cdek_point_address" id="orderCdekPointAddress">
                             <div class="cdek-search">
-                                <input type="text" placeholder="Введите ваш адрес или город" class="order-form__input" id="cdekAddressSearch">
+                                <input type="text" placeholder="Введите ваш адрес или город для поиска пункта СДЭК" class="order-form__input" id="cdekAddressSearch">
                                 <button type="button" class="cdek-search__btn" id="cdekSearchBtn" aria-label="Найти пункты СДЭК">
                                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="2"/><path d="M12 12l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                                 </button>
@@ -672,6 +672,8 @@
                                 <span class="cdek-selected__text" id="cdekSelectedText"></span>
                                 <button type="button" class="cdek-selected__change" id="changeCdekPoint">Изменить</button>
                             </div>
+                            <span class="order-form__error" id="errorCdek"></span>
+                        </div>
                         </div>
                         <button type="submit" class="btn btn--primary btn--full btn--pulse">Оплатить и заказать</button>
                         <p class="order-form__note">Отправка в&nbsp;течение 2&ndash;3 дней после оплаты</p>

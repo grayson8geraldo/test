@@ -394,6 +394,10 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .order-form__input::placeholder{color:var(--c-text-light)}
 select.order-form__input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b6b' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
 .order-form__note{font-size:12px;color:var(--c-text-light);text-align:center;margin-top:4px}
+.order-form__error{display:none;font-size:12px;color:var(--c-danger);margin-top:4px;line-height:1.3}
+.order-form__error.visible{display:block}
+.order-form__input.invalid{border-color:var(--c-danger)}
+.order-form__input.valid{border-color:var(--c-success)}
 
 /* CDEK map widget */
 .cdek-search{display:flex;gap:0}

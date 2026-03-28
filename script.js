@@ -335,43 +335,154 @@ function initOrderForm() {
     const form = document.getElementById('orderFormCdek');
     if (!form) return;
 
+    const nameInput = document.getElementById('orderName');
+    const phoneInput = document.getElementById('orderPhone');
+    const emailInput = document.getElementById('orderEmail');
+
+    // ===== МАСКА ТЕЛЕФОНА +7 (___) ___-__-__ =====
+    function formatPhone(value) {
+        var digits = value.replace(/\D/g, '');
+        // Если начинается с 8, заменяем на 7
+        if (digits.length > 0 && digits[0] === '8') {
+            digits = '7' + digits.substring(1);
+        }
+        // Если не начинается с 7, добавляем
+        if (digits.length > 0 && digits[0] !== '7') {
+            digits = '7' + digits;
+        }
+        var formatted = '';
+        if (digits.length > 0) formatted = '+' + digits[0];
+        if (digits.length > 1) formatted += ' (' + digits.substring(1, 4);
+        if (digits.length >= 4) formatted += ')';
+        if (digits.length > 4) formatted += ' ' + digits.substring(4, 7);
+        if (digits.length > 7) formatted += '-' + digits.substring(7, 9);
+        if (digits.length > 9) formatted += '-' + digits.substring(9, 11);
+        return formatted;
+    }
+
+    phoneInput.addEventListener('input', function () {
+        var cursorPos = this.selectionStart;
+        var oldLength = this.value.length;
+        this.value = formatPhone(this.value);
+        var newLength = this.value.length;
+        cursorPos += newLength - oldLength;
+        this.setSelectionRange(cursorPos, cursorPos);
+    });
+
+    phoneInput.addEventListener('focus', function () {
+        if (!this.value) this.value = '+7 (';
+    });
+
+    phoneInput.addEventListener('blur', function () {
+        if (this.value === '+7 (' || this.value === '+7') this.value = '';
+    });
+
+    // ===== ИМЯ: только буквы, пробелы, дефис =====
+    nameInput.addEventListener('input', function () {
+        this.value = this.value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '');
+    });
+
+    // ===== ВАЛИДАЦИЯ =====
+    function showError(inputEl, errorId, message) {
+        var errorEl = document.getElementById(errorId);
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('visible');
+        }
+        inputEl.classList.add('invalid');
+        inputEl.classList.remove('valid');
+    }
+
+    function clearError(inputEl, errorId) {
+        var errorEl = document.getElementById(errorId);
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.remove('visible');
+        }
+        inputEl.classList.remove('invalid');
+    }
+
+    function markValid(inputEl, errorId) {
+        clearError(inputEl, errorId);
+        if (inputEl.value.trim()) inputEl.classList.add('valid');
+    }
+
+    function validateName() {
+        var val = nameInput.value.trim();
+        if (!val) { showError(nameInput, 'errorName', 'Введите ваше имя'); return false; }
+        if (val.length < 2) { showError(nameInput, 'errorName', 'Имя слишком короткое'); return false; }
+        markValid(nameInput, 'errorName');
+        return true;
+    }
+
+    function validatePhone() {
+        var digits = phoneInput.value.replace(/\D/g, '');
+        if (!digits || digits.length < 2) { showError(phoneInput, 'errorPhone', 'Введите номер телефона'); return false; }
+        if (digits.length !== 11) { showError(phoneInput, 'errorPhone', 'Номер должен содержать 11 цифр'); return false; }
+        markValid(phoneInput, 'errorPhone');
+        return true;
+    }
+
+    function validateEmail() {
+        var val = emailInput.value.trim();
+        if (!val) { showError(emailInput, 'errorEmail', 'Введите email'); return false; }
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if (!emailRegex.test(val)) { showError(emailInput, 'errorEmail', 'Введите корректный email'); return false; }
+        markValid(emailInput, 'errorEmail');
+        return true;
+    }
+
+    function validateCdek() {
+        var val = document.getElementById('orderCdekPointAddress').value;
+        var errorEl = document.getElementById('errorCdek');
+        if (!val) {
+            if (errorEl) { errorEl.textContent = 'Выберите пункт выдачи СДЭК на карте'; errorEl.classList.add('visible'); }
+            return false;
+        }
+        if (errorEl) { errorEl.textContent = ''; errorEl.classList.remove('visible'); }
+        return true;
+    }
+
+    // Валидация при потере фокуса
+    nameInput.addEventListener('blur', validateName);
+    phoneInput.addEventListener('blur', validatePhone);
+    emailInput.addEventListener('blur', validateEmail);
+
+    // Убирать ошибку при вводе
+    nameInput.addEventListener('input', function () { if (nameInput.classList.contains('invalid')) validateName(); });
+    phoneInput.addEventListener('input', function () { if (phoneInput.classList.contains('invalid')) validatePhone(); });
+    emailInput.addEventListener('input', function () { if (emailInput.classList.contains('invalid')) validateEmail(); });
+
+    // ===== ОТПРАВКА ФОРМЫ =====
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const name = document.getElementById('orderName').value.trim();
-        const phone = document.getElementById('orderPhone').value.trim();
-        const email = document.getElementById('orderEmail').value.trim();
-        const city = document.getElementById('orderCity').value.trim();
+        var isValid = true;
+        if (!validateName()) isValid = false;
+        if (!validatePhone()) isValid = false;
+        if (!validateEmail()) isValid = false;
+        if (!validateCdek()) isValid = false;
+
+        if (!isValid) return;
+
+        const name = nameInput.value.trim();
+        const phone = phoneInput.value.trim();
+        const email = emailInput.value.trim();
         const cdekPointAddress = document.getElementById('orderCdekPointAddress').value;
-
-        if (!name || !phone || !email || !city) {
-            alert('Пожалуйста, заполните все поля');
-            return;
-        }
-
-        if (!cdekPointAddress) {
-            alert('Пожалуйста, выберите пункт выдачи СДЭК на карте');
-            return;
-        }
 
         // Генерация уникального номера заказа
         const invId = Date.now();
 
         // Пользовательские параметры (передаются в Робокассу и возвращаются в уведомлении)
         const shpParams = {
+            'Shp_cdek_address': cdekPointAddress,
             'Shp_name': name,
             'Shp_phone': phone,
-            'Shp_email': email,
-            'Shp_city': city,
-            'Shp_cdek_address': cdekPointAddress,
         };
 
         // Формирование URL Робокассы
         // ВАЖНО: В продакшене SignatureValue должна вычисляться на СЕРВЕРЕ!
-        // На клиенте это только для демонстрации / тестового режима.
-        const baseUrl = ROBOKASSA_CONFIG.isTest
-            ? 'https://auth.robokassa.ru/Merchant/Index.aspx'
-            : 'https://auth.robokassa.ru/Merchant/Index.aspx';
+        const baseUrl = 'https://auth.robokassa.ru/Merchant/Index.aspx';
 
         const params = new URLSearchParams({
             MerchantLogin: ROBOKASSA_CONFIG.merchantLogin,
