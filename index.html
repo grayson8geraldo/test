@@ -682,10 +682,20 @@
                             <input type="text" name="city" placeholder="Город" required class="order-form__input" id="orderCity">
                         </div>
                         <div class="order-form__field">
-                            <select name="cdek_point" class="order-form__input" id="orderCdekPoint">
-                                <option value="">Пункт выдачи СДЭК (заполните город)</option>
-                            </select>
+                            <input type="hidden" name="cdek_point_code" id="orderCdekPointCode">
+                            <input type="hidden" name="cdek_point_address" id="orderCdekPointAddress">
+                            <button type="button" class="btn btn--outline btn--full" id="openCdekMap">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="margin-right:8px;vertical-align:middle" aria-hidden="true"><path d="M9 1C5.7 1 3 3.7 3 7c0 4.5 6 10 6 10s6-5.5 6-10c0-3.3-2.7-6-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" fill="currentColor"/></svg>
+                                Выбрать пункт выдачи СДЭК
+                            </button>
+                            <div class="cdek-selected" id="cdekSelected" style="display:none;">
+                                <span class="cdek-selected__icon">&#10003;</span>
+                                <span class="cdek-selected__text" id="cdekSelectedText"></span>
+                                <button type="button" class="cdek-selected__change" id="changeCdekPoint">Изменить</button>
+                            </div>
                         </div>
+                        <!-- Контейнер для виджета СДЭК -->
+                        <div id="cdek-map" style="display:none;"></div>
                         <button type="submit" class="btn btn--primary btn--full btn--pulse">Оплатить и заказать</button>
                         <p class="order-form__note">Отправка в&nbsp;течение 2&ndash;3 дней после оплаты</p>
                     </form>
@@ -704,11 +714,10 @@
                     <span class="pricing__payment">MasterCard</span>
                     <span class="pricing__payment">МИР</span>
                     <span class="pricing__payment">СБП</span>
-                    <span class="pricing__payment">ЮMoney</span>
                 </div>
                 <div class="pricing__security">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1L2 4v4c0 4.4 2.6 7.3 6 8 3.4-.7 6-3.6 6-8V4L8 1z" fill="rgba(39,174,96,0.15)" stroke="#27ae60" stroke-width="1.5"/></svg>
-                    Безопасная оплата через защищённый шлюз
+                    Безопасная оплата через Робокассу
                 </div>
             </div>
         </div>
@@ -823,6 +832,8 @@
     </div>
 
 
+    <!-- СДЭК виджет -->
+    <script src="https://cdn.jsdelivr.net/npm/@cdek-it/widget@3" charset="utf-8"></script>
     <script src="script.js"></script>
 </body>
 </html>

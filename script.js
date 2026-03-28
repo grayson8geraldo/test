@@ -196,9 +196,88 @@ function initDeliveryChoice() {
             }
         });
     });
+
+    // CDEK map widget
+    initCdekWidget();
 }
 
-// ===== ORDER FORM (CDEK + YooKassa) =====
+// ===== CDEK PICKUP POINT WIDGET =====
+function initCdekWidget() {
+    const openBtn = document.getElementById('openCdekMap');
+    const changeBtn = document.getElementById('changeCdekPoint');
+    const mapContainer = document.getElementById('cdek-map');
+    const selectedBlock = document.getElementById('cdekSelected');
+    const selectedText = document.getElementById('cdekSelectedText');
+    const codeInput = document.getElementById('orderCdekPointCode');
+    const addressInput = document.getElementById('orderCdekPointAddress');
+
+    if (!openBtn || !mapContainer) return;
+
+    let widgetInstance = null;
+
+    function openMap() {
+        mapContainer.style.display = 'block';
+        openBtn.style.display = 'none';
+
+        if (!widgetInstance) {
+            // Инициализация виджета СДЭК
+            // Документация: https://github.com/cdek-it/widget
+            // TODO: заменить YOUR_CDEK_API_KEY на реальный ключ из ЛК СДЭК
+            widgetInstance = new CDEKWidget({
+                from: 'Москва',          // город отправки (город автора)
+                root: 'cdek-map',
+                apiKey: 'YOUR_CDEK_API_KEY', // API-ключ из ЛК СДЭК
+                servicePath: '',          // URL вашего бэкенд-прокси (если нужен)
+                defaultLocation: 'Москва',
+                lang: 'rus',
+                currency: 'RUB',
+                tariffs: {
+                    office: [234, 136],   // тарифы ПВЗ: Экономичный, Посылка склад-склад
+                    door: [233, 137],     // тарифы до двери
+                },
+                goods: [
+                    {
+                        width: 22,        // ширина книги, см
+                        height: 29,       // высота, см
+                        length: 4,        // толщина, см
+                        weight: 1.5       // вес, кг (примерный для книги 476 стр.)
+                    }
+                ],
+                onChoose: function(deliveryType, tariff, address) {
+                    // Пользователь выбрал пункт выдачи или адрес доставки
+                    codeInput.value = address.code || '';
+                    addressInput.value = address.address || '';
+                    selectedText.textContent = address.address || 'Пункт выбран';
+                    selectedBlock.style.display = 'flex';
+                    mapContainer.style.display = 'none';
+                    openBtn.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    openBtn.addEventListener('click', openMap);
+    if (changeBtn) {
+        changeBtn.addEventListener('click', () => {
+            selectedBlock.style.display = 'none';
+            mapContainer.style.display = 'block';
+        });
+    }
+}
+
+// ===== ORDER FORM (Robokassa) =====
+// Конфигурация Робокассы — заменить на реальные данные после регистрации
+const ROBOKASSA_CONFIG = {
+    merchantLogin: 'YOUR_MERCHANT_LOGIN',  // Логин из ЛК Робокассы
+    // Пароль #1 используется для формирования подписи
+    // ВАЖНО: в продакшене подпись должна формироваться на сервере!
+    // Для тестового режима можно использовать на клиенте
+    password1: 'YOUR_PASSWORD_1',
+    isTest: true,  // true = тестовый режим, false = боевой
+    outSumm: '1990',
+    description: 'Книга «Каркас над пропастью: строю дом на болоте»',
+};
+
 function initOrderForm() {
     const form = document.getElementById('orderFormCdek');
     if (!form) return;
@@ -210,17 +289,51 @@ function initOrderForm() {
         const phone = document.getElementById('orderPhone').value.trim();
         const email = document.getElementById('orderEmail').value.trim();
         const city = document.getElementById('orderCity').value.trim();
+        const cdekPointCode = document.getElementById('orderCdekPointCode').value;
+        const cdekPointAddress = document.getElementById('orderCdekPointAddress').value;
 
-        if (!name || !phone || !email || !city) return;
+        if (!name || !phone || !email || !city) {
+            alert('Пожалуйста, заполните все поля');
+            return;
+        }
 
-        // TODO: Здесь будет интеграция с ЮKassa
-        // 1. Отправить данные на сервер (POST /api/create-order)
-        // 2. Сервер создаёт платёж через ЮKassa API
-        // 3. Получить confirmation_url от ЮKassa
-        // 4. Перенаправить пользователя на страницу оплаты:
-        // window.location.href = data.confirmation_url;
+        if (!cdekPointCode && !cdekPointAddress) {
+            alert('Пожалуйста, выберите пункт выдачи СДЭК');
+            return;
+        }
 
-        alert('Заказ оформлен! Интеграция с ЮKassa будет подключена после настройки.');
+        // Генерация уникального номера заказа
+        const invId = Date.now();
+
+        // Пользовательские параметры (передаются в Робокассу и возвращаются в уведомлении)
+        const shpParams = {
+            'Shp_name': name,
+            'Shp_phone': phone,
+            'Shp_email': email,
+            'Shp_city': city,
+            'Shp_cdek_point': cdekPointCode,
+            'Shp_cdek_address': cdekPointAddress,
+        };
+
+        // Формирование URL Робокассы
+        // ВАЖНО: В продакшене SignatureValue должна вычисляться на СЕРВЕРЕ!
+        // На клиенте это только для демонстрации / тестового режима.
+        const baseUrl = ROBOKASSA_CONFIG.isTest
+            ? 'https://auth.robokassa.ru/Merchant/Index.aspx'
+            : 'https://auth.robokassa.ru/Merchant/Index.aspx';
+
+        const params = new URLSearchParams({
+            MerchantLogin: ROBOKASSA_CONFIG.merchantLogin,
+            OutSum: ROBOKASSA_CONFIG.outSumm,
+            InvId: invId,
+            Description: ROBOKASSA_CONFIG.description,
+            Email: email,
+            IsTest: ROBOKASSA_CONFIG.isTest ? '1' : '0',
+            ...shpParams,
+        });
+
+        // Перенаправление на страницу оплаты Робокассы
+        window.location.href = baseUrl + '?' + params.toString();
     });
 }
 
