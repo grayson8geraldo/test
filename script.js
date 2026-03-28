@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initStickyCta();
     initDeliveryChoice();
     initOrderForm();
-    initVideoPlaceholder();
 });
 
 // ===== NAVIGATION =====
@@ -386,25 +385,6 @@ function initOrderForm() {
 
         // Перенаправление на страницу оплаты Робокассы
         window.location.href = baseUrl + '?' + params.toString();
-    });
-}
-
-// ===== VIDEO PLACEHOLDER =====
-function initVideoPlaceholder() {
-    const placeholder = document.getElementById('videoPlaceholder');
-    if (!placeholder) return;
-
-    function activate() {
-        placeholder.innerHTML = '<div class="video-placeholder__message"><p>Здесь будет видео-обзор строительства.</p><p>Подключите YouTube/Vimeo embed для реального видео.</p></div>';
-        placeholder.classList.add('video-placeholder--active');
-    }
-
-    placeholder.addEventListener('click', activate);
-    placeholder.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            activate();
-        }
     });
 }
 
