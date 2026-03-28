@@ -365,7 +365,10 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 
 /* Order form */
 .order-form{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.order-form__row{display:flex;gap:12px}
+.order-form__row .order-form__field{flex:1}
 .order-form__field{}
+@media(max-width:480px){.order-form__row{flex-direction:column}}
 .order-form__input{width:100%;padding:12px 16px;border:2px solid var(--c-border);border-radius:var(--r-sm);font-family:var(--f-body);font-size:15px;color:var(--c-text);background:var(--c-card);transition:border-color .2s;box-sizing:border-box}
 .order-form__input:focus{outline:none;border-color:var(--c-accent)}
 .order-form__input::placeholder{color:var(--c-text-light)}

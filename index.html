@@ -658,9 +658,15 @@
 
                     <!-- Форма СДЭК -->
                     <form class="order-form" id="orderFormCdek" novalidate>
-                        <div class="order-form__field">
-                            <input type="text" name="name" placeholder="Ваше имя" required class="order-form__input" id="orderName" autocomplete="name" pattern="[A-Za-zА-Яа-яЁё\s\-]{2,50}">
-                            <span class="order-form__error" id="errorName"></span>
+                        <div class="order-form__row">
+                            <div class="order-form__field">
+                                <input type="text" name="surname" placeholder="Фамилия" required class="order-form__input" id="orderSurname" autocomplete="family-name">
+                                <span class="order-form__error" id="errorSurname"></span>
+                            </div>
+                            <div class="order-form__field">
+                                <input type="text" name="name" placeholder="Имя" required class="order-form__input" id="orderName" autocomplete="given-name">
+                                <span class="order-form__error" id="errorName"></span>
+                            </div>
                         </div>
                         <div class="order-form__field">
                             <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" required class="order-form__input" id="orderPhone" autocomplete="tel">

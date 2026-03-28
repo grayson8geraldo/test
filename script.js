@@ -280,6 +280,7 @@ function initCdekYandexMap() {
 
     function selectPoint(address) {
         addressInput.value = address;
+        searchInput.value = address;
         selectedText.textContent = address;
         selectedBlock.style.display = 'flex';
         mapWrapper.style.display = 'none';
@@ -335,9 +336,15 @@ function initOrderForm() {
     const form = document.getElementById('orderFormCdek');
     if (!form) return;
 
+    const surnameInput = document.getElementById('orderSurname');
     const nameInput = document.getElementById('orderName');
     const phoneInput = document.getElementById('orderPhone');
     const emailInput = document.getElementById('orderEmail');
+
+    // ===== ФАМИЛИЯ: только буквы, пробелы, дефис =====
+    surnameInput.addEventListener('input', function () {
+        this.value = this.value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '');
+    });
 
     // ===== МАСКА ТЕЛЕФОНА +7 (___) ___-__-__ =====
     function formatPhone(value) {
@@ -407,9 +414,17 @@ function initOrderForm() {
         if (inputEl.value.trim()) inputEl.classList.add('valid');
     }
 
+    function validateSurname() {
+        var val = surnameInput.value.trim();
+        if (!val) { showError(surnameInput, 'errorSurname', 'Введите фамилию'); return false; }
+        if (val.length < 2) { showError(surnameInput, 'errorSurname', 'Фамилия слишком короткая'); return false; }
+        markValid(surnameInput, 'errorSurname');
+        return true;
+    }
+
     function validateName() {
         var val = nameInput.value.trim();
-        if (!val) { showError(nameInput, 'errorName', 'Введите ваше имя'); return false; }
+        if (!val) { showError(nameInput, 'errorName', 'Введите имя'); return false; }
         if (val.length < 2) { showError(nameInput, 'errorName', 'Имя слишком короткое'); return false; }
         markValid(nameInput, 'errorName');
         return true;
@@ -444,11 +459,13 @@ function initOrderForm() {
     }
 
     // Валидация при потере фокуса
+    surnameInput.addEventListener('blur', validateSurname);
     nameInput.addEventListener('blur', validateName);
     phoneInput.addEventListener('blur', validatePhone);
     emailInput.addEventListener('blur', validateEmail);
 
     // Убирать ошибку при вводе
+    surnameInput.addEventListener('input', function () { if (surnameInput.classList.contains('invalid')) validateSurname(); });
     nameInput.addEventListener('input', function () { if (nameInput.classList.contains('invalid')) validateName(); });
     phoneInput.addEventListener('input', function () { if (phoneInput.classList.contains('invalid')) validatePhone(); });
     emailInput.addEventListener('input', function () { if (emailInput.classList.contains('invalid')) validateEmail(); });
@@ -458,6 +475,7 @@ function initOrderForm() {
         e.preventDefault();
 
         var isValid = true;
+        if (!validateSurname()) isValid = false;
         if (!validateName()) isValid = false;
         if (!validatePhone()) isValid = false;
         if (!validateEmail()) isValid = false;
@@ -465,6 +483,7 @@ function initOrderForm() {
 
         if (!isValid) return;
 
+        const surname = surnameInput.value.trim();
         const name = nameInput.value.trim();
         const phone = phoneInput.value.trim();
         const email = emailInput.value.trim();
@@ -476,7 +495,7 @@ function initOrderForm() {
         // Пользовательские параметры (передаются в Робокассу и возвращаются в уведомлении)
         const shpParams = {
             'Shp_cdek_address': cdekPointAddress,
-            'Shp_name': name,
+            'Shp_name': surname + ' ' + name,
             'Shp_phone': phone,
         };
 
