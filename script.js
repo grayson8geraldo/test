@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initStickyCta();
     initDeliveryChoice();
     initOrderForm();
+    initReviewToggle();
 });
 
 // ===== NAVIGATION =====
@@ -515,6 +516,38 @@ function initOrderForm() {
 
         // Перенаправление на страницу оплаты Робокассы
         window.location.href = baseUrl + '?' + params.toString();
+    });
+}
+
+// ===== REVIEW TOGGLE (Читать полностью / Свернуть) =====
+function initReviewToggle() {
+    document.querySelectorAll('.review-card__text').forEach(function (text) {
+        // Сначала замеряем полную высоту
+        var fullHeight = text.scrollHeight;
+        text.classList.add('is-clamped');
+
+        // Ждём рендера, чтобы замерить обрезанную высоту
+        requestAnimationFrame(function () {
+            var clampedHeight = text.clientHeight;
+            // Если текст обрезался — добавляем кнопку
+            if (fullHeight > clampedHeight + 2) {
+                var btn = document.createElement('button');
+                btn.className = 'review-card__toggle';
+                btn.textContent = 'Читать полностью';
+                text.after(btn);
+
+                btn.addEventListener('click', function () {
+                    var isClamped = text.classList.contains('is-clamped');
+                    if (isClamped) {
+                        text.classList.remove('is-clamped');
+                        btn.textContent = 'Свернуть';
+                    } else {
+                        text.classList.add('is-clamped');
+                        btn.textContent = 'Читать полностью';
+                    }
+                });
+            }
+        });
     });
 }
 

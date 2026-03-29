@@ -295,6 +295,9 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .review-card__stars{color:var(--c-accent);font-size:18px;letter-spacing:3px}
 .review-card__verified{font-size:11px;font-weight:600;color:var(--c-success);background:rgba(39,174,96,.08);padding:3px 10px;border-radius:100px}
 .review-card__text{font-size:15px;line-height:1.75;color:var(--c-text);font-style:italic;margin-bottom:16px;flex-grow:1}
+.review-card__text.is-clamped{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.review-card__toggle{background:none;border:none;color:var(--c-accent-dark);font-size:14px;font-weight:600;cursor:pointer;padding:0;margin-bottom:16px;transition:opacity .2s}
+.review-card__toggle:hover{opacity:.7}
 .review-card__result{font-size:13px;color:var(--c-text-light);padding:10px 0;border-top:1px solid var(--c-border);margin-bottom:16px}
 .review-card__result strong{color:var(--c-primary)}
 .review-card__author{display:flex;align-items:center;gap:14px}
