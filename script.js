@@ -328,7 +328,7 @@ const ROBOKASSA_CONFIG = {
     // Для тестового режима можно использовать на клиенте
     password1: 'YOUR_PASSWORD_1',
     isTest: true,  // true = тестовый режим, false = боевой
-    outSumm: '1099',
+    outSumm: '3499',
     description: 'Книга «Каркас над пропастью: строю дом на болоте»',
 };
 
