@@ -173,7 +173,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .video-embed iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
 
 /* ===== ABOUT BOOK ===== */
-.about-book{padding:var(--s-section) 0;background:var(--c-primary-dark);color:var(--c-text-inv)}
+.about-book{padding:var(--s-section) 0;background:var(--c-primary-dark);color:var(--c-text-inv);overflow:hidden}
 .about-book .section-tag{color:var(--c-accent-light);background:rgba(212,168,67,.12);border-color:rgba(212,168,67,.25)}
 .about-book .section-title{color:#fff}
 .about-book .section-desc{color:rgba(255,255,255,.6)}
