@@ -368,6 +368,9 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 
 /* Order form */
 .order-form{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.order-total{background:#f5f3ec;border-radius:var(--r-md);padding:16px 20px;margin:16px 0}
+.order-total__row{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--c-text-light);padding:6px 0}
+.order-total__row--sum{font-size:17px;font-weight:700;color:var(--c-primary-dark);border-top:1px solid var(--c-border);margin-top:6px;padding-top:12px}
 .order-form__row{display:flex;gap:12px}
 .order-form__row .order-form__field{flex:1}
 .order-form__field{}
