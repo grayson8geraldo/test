@@ -173,13 +173,19 @@ function initStickyCta() {
 
 // ===== DELIVERY CHOICE =====
 function initDeliveryChoice() {
-    const radios = document.querySelectorAll('input[name="delivery"]');
+    const radios = document.querySelectorAll('input[name="delivery"]:not([disabled])');
     const cdekForm = document.getElementById('orderFormCdek');
     const avitoBlock = document.getElementById('orderAvito');
     const optionCdek = document.getElementById('optionCdek');
     const optionAvito = document.getElementById('optionAvito');
 
-    if (!radios.length || !cdekForm || !avitoBlock) return;
+    if (!cdekForm || !avitoBlock) return;
+
+    // По умолчанию показываем Авито (СДЭК временно недоступен)
+    cdekForm.style.display = 'none';
+    avitoBlock.style.display = '';
+    if (optionAvito) optionAvito.classList.add('delivery-option--active');
+    if (optionCdek) optionCdek.classList.remove('delivery-option--active');
 
     radios.forEach(radio => {
         radio.addEventListener('change', () => {
@@ -196,9 +202,6 @@ function initDeliveryChoice() {
             }
         });
     });
-
-    // CDEK map on Yandex Maps
-    initCdekYandexMap();
 }
 
 // ===== CDEK PICKUP POINTS ON YANDEX MAP =====
