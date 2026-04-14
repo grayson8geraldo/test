@@ -173,19 +173,13 @@ function initStickyCta() {
 
 // ===== DELIVERY CHOICE =====
 function initDeliveryChoice() {
-    const radios = document.querySelectorAll('input[name="delivery"]:not([disabled])');
+    const radios = document.querySelectorAll('input[name="delivery"]');
     const cdekForm = document.getElementById('orderFormCdek');
     const avitoBlock = document.getElementById('orderAvito');
     const optionCdek = document.getElementById('optionCdek');
     const optionAvito = document.getElementById('optionAvito');
 
-    if (!cdekForm || !avitoBlock) return;
-
-    // По умолчанию показываем Авито (СДЭК временно недоступен)
-    cdekForm.style.display = 'none';
-    avitoBlock.style.display = '';
-    if (optionAvito) optionAvito.classList.add('delivery-option--active');
-    if (optionCdek) optionCdek.classList.remove('delivery-option--active');
+    if (!radios.length || !cdekForm || !avitoBlock) return;
 
     radios.forEach(radio => {
         radio.addEventListener('change', () => {
@@ -202,6 +196,9 @@ function initDeliveryChoice() {
             }
         });
     });
+
+    // CDEK map on Yandex Maps
+    initCdekYandexMap();
 }
 
 // ===== CDEK PICKUP POINTS ON YANDEX MAP =====
@@ -332,7 +329,7 @@ const ROBOKASSA_CONFIG = {
     // Для тестового режима можно использовать на клиенте
     password1: 'YOUR_PASSWORD_1',
     isTest: true,  // true = тестовый режим, false = боевой
-    outSumm: '3390',  // 2990 (книга) + 400 (доставка СДЭК)
+    outSumm: '2990',  // Цена книги. Доставка СДЭК оплачивается отдельно при получении
     description: 'Книга «Каркас над пропастью: строю дом на болоте»',
 };
 

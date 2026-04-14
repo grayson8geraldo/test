@@ -570,16 +570,16 @@
                     <!-- Выбор способа доставки -->
                     <div class="delivery-choice" id="deliveryChoice">
                         <h4 class="delivery-choice__title">Выберите способ доставки:</h4>
-                        <label class="delivery-option delivery-option--disabled" id="optionCdek">
-                            <input type="radio" name="delivery" value="cdek" disabled>
+                        <label class="delivery-option delivery-option--active" id="optionCdek">
+                            <input type="radio" name="delivery" value="cdek" checked>
                             <span class="delivery-option__radio"></span>
                             <div class="delivery-option__content">
                                 <strong>СДЭК</strong>
-                                <span>Временно недоступно</span>
+                                <span>Доставка до&nbsp;пункта выдачи по&nbsp;всей России</span>
                             </div>
                         </label>
-                        <label class="delivery-option delivery-option--active" id="optionAvito">
-                            <input type="radio" name="delivery" value="avito" checked>
+                        <label class="delivery-option" id="optionAvito">
+                            <input type="radio" name="delivery" value="avito">
                             <span class="delivery-option__radio"></span>
                             <div class="delivery-option__content">
                                 <strong>Авито Доставка</strong>
@@ -589,7 +589,7 @@
                     </div>
 
                     <!-- Форма СДЭК -->
-                    <form class="order-form" id="orderFormCdek" novalidate style="display:none;">
+                    <form class="order-form" id="orderFormCdek" novalidate>
                         <div class="order-form__row">
                             <div class="order-form__field">
                                 <input type="text" name="surname" placeholder="Фамилия" required class="order-form__input" id="orderSurname" autocomplete="family-name">
@@ -628,15 +628,22 @@
                         </div>
                         <div class="order-total">
                             <div class="order-total__row"><span>Книга</span><span>2&nbsp;990&nbsp;&#8381;</span></div>
-                            <div class="order-total__row"><span>Доставка СДЭК</span><span>400&nbsp;&#8381;</span></div>
-                            <div class="order-total__row order-total__row--sum"><span>Итого</span><span>3&nbsp;390&nbsp;&#8381;</span></div>
+                            <div class="order-total__row order-total__row--sum"><span>К&nbsp;оплате</span><span>2&nbsp;990&nbsp;&#8381;</span></div>
+                        </div>
+                        <div class="delivery-rates">
+                            <p class="delivery-rates__title">Стоимость доставки СДЭК оплачивается отдельно при&nbsp;получении:</p>
+                            <ul class="delivery-rates__list">
+                                <li><span>Москва и&nbsp;МО</span><strong>300&nbsp;&#8381;</strong></li>
+                                <li><span>Европейская часть России</span><strong>300&ndash;500&nbsp;&#8381;</strong></li>
+                                <li><span>Сибирь и&nbsp;Дальний Восток</span><strong>500&ndash;700&nbsp;&#8381;</strong></li>
+                            </ul>
                         </div>
                         <button type="submit" class="btn btn--primary btn--full btn--pulse">Оплатить и заказать</button>
                         <p class="order-form__note">Отправка в&nbsp;течение 2&ndash;3 дней после оплаты</p>
                     </form>
 
-                    <!-- Кнопка Авито (показана по умолчанию) -->
-                    <div class="order-avito" id="orderAvito">
+                    <!-- Кнопка Авито (скрыта по умолчанию) -->
+                    <div class="order-avito" id="orderAvito" style="display:none;">
                         <p class="order-avito__text">Вы&nbsp;будете перенаправлены на&nbsp;страницу книги на&nbsp;Авито, где сможете оформить заказ через Авито&nbsp;Доставку.</p>
                         <a href="https://www.avito.ru/reutov/knigi_i_zhurnaly/knigi_7952171056?utm_campaign=native&utm_medium=item_page_android&utm_source=soc_sharing_seller" class="btn btn--primary btn--full" id="avitoLink" target="_blank" rel="noopener">Перейти на Авито</a>
                     </div>
@@ -653,6 +660,31 @@
                 <div class="pricing__security">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1L2 4v4c0 4.4 2.6 7.3 6 8 3.4-.7 6-3.6 6-8V4L8 1z" fill="rgba(39,174,96,0.15)" stroke="#27ae60" stroke-width="1.5"/></svg>
                     Безопасная оплата через Робокассу
+                </div>
+            </div>
+
+            <!-- Магазины -->
+            <div class="stores" data-animate="fade-up">
+                <h3 class="stores__title">Книгу также можно приобрести в&nbsp;магазинах</h3>
+                <div class="stores__grid">
+                    <div class="stores__item">
+                        <span class="stores__icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 4h12a4 4 0 014 4v12H8a4 4 0 01-4-4V4z" stroke="currentColor" stroke-width="1.8"/><path d="M4 4v16" stroke="currentColor" stroke-width="1.8"/></svg>
+                        </span>
+                        <div>
+                            <strong>«Читай-город»</strong>
+                            <span>Сеть книжных магазинов по&nbsp;всей&nbsp;России</span>
+                        </div>
+                    </div>
+                    <div class="stores__item">
+                        <span class="stores__icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 4h12a4 4 0 014 4v12H8a4 4 0 01-4-4V4z" stroke="currentColor" stroke-width="1.8"/><path d="M4 4v16" stroke="currentColor" stroke-width="1.8"/></svg>
+                        </span>
+                        <div>
+                            <strong>«Дом книги»</strong>
+                            <span>Санкт-Петербург, Невский&nbsp;пр.,&nbsp;28</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
