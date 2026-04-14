@@ -589,7 +589,7 @@
                     </div>
 
                     <!-- Форма СДЭК -->
-                    <form class="order-form" id="orderFormCdek" novalidate>
+                    <form class="order-form" id="orderFormCdek" action="/robokassa/payment.php" method="POST" novalidate>
                         <div class="order-form__row">
                             <div class="order-form__field">
                                 <input type="text" name="surname" placeholder="Фамилия" required class="order-form__input" id="orderSurname" autocomplete="family-name">
@@ -609,7 +609,7 @@
                             <span class="order-form__error" id="errorEmail"></span>
                         </div>
                         <div class="order-form__field">
-                            <input type="hidden" name="cdek_point_address" id="orderCdekPointAddress">
+                            <input type="hidden" name="cdek_address" id="orderCdekPointAddress">
                             <div class="cdek-search">
                                 <input type="text" placeholder="Введите ваш адрес или город для поиска пункта СДЭК" class="order-form__input" id="cdekAddressSearch">
                                 <button type="button" class="cdek-search__btn" id="cdekSearchBtn" aria-label="Найти пункты СДЭК">

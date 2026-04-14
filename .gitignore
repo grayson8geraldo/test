@@ -1,0 +1,11 @@
+# Секреты Робокассы — не коммитим
+/robokassa/config.php
+
+# Логи заказов
+/robokassa/*.log
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+*.swp
+*~

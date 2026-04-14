@@ -321,17 +321,10 @@ function initCdekYandexMap() {
 }
 
 // ===== ORDER FORM (Robokassa) =====
-// Конфигурация Робокассы — заменить на реальные данные после регистрации
-const ROBOKASSA_CONFIG = {
-    merchantLogin: 'YOUR_MERCHANT_LOGIN',  // Логин из ЛК Робокассы
-    // Пароль #1 используется для формирования подписи
-    // ВАЖНО: в продакшене подпись должна формироваться на сервере!
-    // Для тестового режима можно использовать на клиенте
-    password1: 'YOUR_PASSWORD_1',
-    isTest: true,  // true = тестовый режим, false = боевой
-    outSumm: '2990',  // Цена книги. Доставка СДЭК оплачивается отдельно при получении
-    description: 'Книга «Каркас над пропастью: строю дом на болоте»',
-};
+// Все реквизиты Робокассы (MerchantLogin, Пароль #1/#2, цена, режим тест/бой)
+// хранятся на сервере в /robokassa/config.php.
+// Подпись формируется в /robokassa/payment.php — это безопасно.
+// Клиент только валидирует поля и POST-ит форму на payment.php.
 
 function initOrderForm() {
     const form = document.getElementById('orderFormCdek');
@@ -472,9 +465,10 @@ function initOrderForm() {
     emailInput.addEventListener('input', function () { if (emailInput.classList.contains('invalid')) validateEmail(); });
 
     // ===== ОТПРАВКА ФОРМЫ =====
+    // Форма нативно POST-ом уходит на /robokassa/payment.php,
+    // где сервер формирует подпись с Паролем #1 (на клиенте пароль не хранится!)
+    // и редиректит на Робокассу. Здесь делаем только клиентскую валидацию.
     form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
         var isValid = true;
         if (!validateSurname()) isValid = false;
         if (!validateName()) isValid = false;
@@ -482,40 +476,11 @@ function initOrderForm() {
         if (!validateEmail()) isValid = false;
         if (!validateCdek()) isValid = false;
 
-        if (!isValid) return;
-
-        const surname = surnameInput.value.trim();
-        const name = nameInput.value.trim();
-        const phone = phoneInput.value.trim();
-        const email = emailInput.value.trim();
-        const cdekPointAddress = document.getElementById('orderCdekPointAddress').value;
-
-        // Генерация уникального номера заказа
-        const invId = Date.now();
-
-        // Пользовательские параметры (передаются в Робокассу и возвращаются в уведомлении)
-        const shpParams = {
-            'Shp_cdek_address': cdekPointAddress,
-            'Shp_name': surname + ' ' + name,
-            'Shp_phone': phone,
-        };
-
-        // Формирование URL Робокассы
-        // ВАЖНО: В продакшене SignatureValue должна вычисляться на СЕРВЕРЕ!
-        const baseUrl = 'https://auth.robokassa.ru/Merchant/Index.aspx';
-
-        const params = new URLSearchParams({
-            MerchantLogin: ROBOKASSA_CONFIG.merchantLogin,
-            OutSum: ROBOKASSA_CONFIG.outSumm,
-            InvId: invId,
-            Description: ROBOKASSA_CONFIG.description,
-            Email: email,
-            IsTest: ROBOKASSA_CONFIG.isTest ? '1' : '0',
-            ...shpParams,
-        });
-
-        // Перенаправление на страницу оплаты Робокассы
-        window.location.href = baseUrl + '?' + params.toString();
+        if (!isValid) {
+            e.preventDefault();
+            return;
+        }
+        // Если всё валидно — форма уходит на payment.php естественным submit
     });
 }
 

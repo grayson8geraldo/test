@@ -1,0 +1,7 @@
+# Защита конфига, логов и sample-файлов от прямого доступа через браузер
+<FilesMatch "^(config\.php|config\.sample\.php|.*\.log)$">
+    Require all denied
+</FilesMatch>
+
+# Запретить листинг директории
+Options -Indexes
