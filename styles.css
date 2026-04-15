@@ -370,13 +370,15 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .delivery-rates__list li strong{color:var(--c-text);font-weight:600;white-space:nowrap}
 
 /* Stores block */
-.stores{margin-top:32px;padding:24px;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);text-align:center}
-.stores__title{font-family:var(--f-heading);font-size:clamp(18px,2.5vw,22px);color:var(--c-text);margin:0 0 20px;font-weight:600}
-.stores__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.stores__item{display:flex;align-items:center;gap:14px;padding:14px 18px;background:#fafaf7;border-radius:var(--r-sm);text-align:left}
-.stores__icon{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;border-radius:50%;background:rgba(212,168,67,0.15);color:var(--c-accent)}
-.stores__item strong{display:block;font-size:15px;color:var(--c-text);margin-bottom:2px}
-.stores__item span{display:block;font-size:13px;color:var(--c-text-light)}
+.stores{margin-top:32px;padding:28px 24px;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);text-align:center}
+.stores__title{font-family:var(--f-heading);font-size:clamp(18px,2.5vw,22px);color:var(--c-text);margin:0 0 24px;font-weight:600}
+.stores__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.stores__item{display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fafaf7;border-radius:var(--r-sm);text-align:left;transition:background .2s,transform .2s}
+.stores__item:hover{background:#f2f0e8;transform:translateY(-2px)}
+.stores__logo{width:72px;height:72px;min-width:72px;object-fit:contain;border-radius:12px;background:#fff;padding:6px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.stores__info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.stores__info strong{font-size:15px;color:var(--c-text);font-weight:600}
+.stores__info span{font-size:13px;color:var(--c-text-light);line-height:1.4}
 
 /* Order form */
 .order-form{margin-top:20px;display:flex;flex-direction:column;gap:12px}
