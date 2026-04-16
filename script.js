@@ -263,8 +263,21 @@ function initCdekYandexMap() {
             }).then(function (searchRes) {
                 searchRes.geoObjects.events.add('click', function (e) {
                     var target = e.get('target');
-                    var address = target.properties.get('text') || target.properties.get('name') || '';
-                    selectPoint(address);
+                    var props = target.properties;
+
+                    // Бизнес-поиск (ymaps.search) — метаданные организации
+                    var companyMeta = props.get('metaDataProperty.CompanyMetaData') || {};
+                    // Геокодер — полный адрес строкой
+                    var geoMeta = props.get('metaDataProperty.GeocoderMetaData') || {};
+
+                    var name = companyMeta.name || props.get('name') || 'Пункт СДЭК';
+                    var address = companyMeta.address
+                        || geoMeta.text
+                        || props.get('description')
+                        || '';
+
+                    var full = address ? (name + ': ' + address) : name;
+                    selectPoint(full);
                 });
                 myMap.geoObjects.add(searchRes.geoObjects);
             });
