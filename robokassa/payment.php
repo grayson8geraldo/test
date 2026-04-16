@@ -45,8 +45,32 @@ if (mb_strlen($cdekAddress, 'UTF-8') < 5) $errors[] = 'Адрес СДЭК';
 
 if ($errors) {
     http_response_code(400);
-    header('Content-Type: text/plain; charset=utf-8');
-    exit('Проверьте поля: ' . implode(', ', $errors));
+    header('Content-Type: text/html; charset=utf-8');
+    $msg = htmlspecialchars('Проверьте поля: ' . implode(', ', $errors), ENT_QUOTES, 'UTF-8');
+    echo <<<HTML
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ошибка оформления заказа</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#fafaf7;color:#2d3436;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:480px;width:100%;background:#fff;border-radius:16px;padding:40px 32px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+.icon{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:#fff5e6;display:flex;align-items:center;justify-content:center;font-size:32px;color:#d4a843}
+h1{font-size:22px;color:#1a3c28;margin-bottom:12px}
+p{font-size:15px;line-height:1.6;color:#555;margin-bottom:8px}
+.hint{font-size:13px;color:#888;background:#f5f3ec;padding:10px 14px;border-radius:8px;margin:16px 0}
+.btn{display:inline-block;padding:12px 28px;background:#1a3c28;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;margin-top:12px}
+.btn:hover{opacity:.9}
+</style></head><body>
+<div class="card">
+  <div class="icon">⚠️</div>
+  <h1>Не удалось оформить заказ</h1>
+  <p>{$msg}</p>
+  <div class="hint">💡 Для СДЭК: введите ваш город и кликните на&nbsp;маркер пункта выдачи на&nbsp;карте. Адрес должен отобразиться в&nbsp;зелёной плашке.</div>
+  <a href="/#pricing" class="btn">Вернуться к заказу</a>
+</div></body></html>
+HTML;
+    exit;
 }
 
 // Выбираем пароли в зависимости от режима

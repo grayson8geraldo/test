@@ -442,10 +442,10 @@ function initOrderForm() {
     }
 
     function validateCdek() {
-        var val = document.getElementById('orderCdekPointAddress').value;
+        var val = (document.getElementById('orderCdekPointAddress').value || '').trim();
         var errorEl = document.getElementById('errorCdek');
-        if (!val) {
-            if (errorEl) { errorEl.textContent = 'Выберите пункт выдачи СДЭК на карте'; errorEl.classList.add('visible'); }
+        if (val.length < 5) {
+            if (errorEl) { errorEl.textContent = 'Выберите пункт выдачи СДЭК на карте (введите город и кликните на маркер)'; errorEl.classList.add('visible'); }
             return false;
         }
         if (errorEl) { errorEl.textContent = ''; errorEl.classList.remove('visible'); }
