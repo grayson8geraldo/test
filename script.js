@@ -542,6 +542,13 @@ function initMetrikaGoals() {
         });
     }
 
+    // Клик по любой кнопке «Заказать книгу» / «Купить» / «Получить книгу»
+    document.querySelectorAll('a[href="#pricing"]').forEach(function (link) {
+        link.addEventListener('click', function () {
+            ym(108704155, 'reachGoal', 'zakaz_click');
+        });
+    });
+
     // Просмотр секции «Заказать книгу» (pricing)
     var pricingSection = document.getElementById('pricing');
     if (pricingSection && 'IntersectionObserver' in window) {
