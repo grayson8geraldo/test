@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initDeliveryChoice();
     initOrderForm();
     initReviewToggle();
+    initMetrikaGoals();
 });
 
 // ===== NAVIGATION =====
@@ -493,7 +494,7 @@ function initOrderForm() {
             e.preventDefault();
             return;
         }
-        // Если всё валидно — форма уходит на payment.php естественным submit
+        if (typeof ym === 'function') ym(108704155, 'reachGoal', 'payment_click');
     });
 }
 
@@ -527,6 +528,33 @@ function initReviewToggle() {
             }
         });
     });
+}
+
+// ===== YANDEX METRIKA GOALS =====
+function initMetrikaGoals() {
+    if (typeof ym !== 'function') return;
+
+    // Клик «Перейти на Авито»
+    var avitoLink = document.getElementById('avitoLink');
+    if (avitoLink) {
+        avitoLink.addEventListener('click', function () {
+            ym(108704155, 'reachGoal', 'avito_click');
+        });
+    }
+
+    // Просмотр секции «Заказать книгу» (pricing)
+    var pricingSection = document.getElementById('pricing');
+    if (pricingSection && 'IntersectionObserver' in window) {
+        var fired = false;
+        var observer = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting && !fired) {
+                fired = true;
+                ym(108704155, 'reachGoal', 'pricing_view');
+                observer.disconnect();
+            }
+        }, { threshold: 0.3 });
+        observer.observe(pricingSection);
+    }
 }
 
 // ===== UTILITY =====
