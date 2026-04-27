@@ -299,6 +299,7 @@ function initCdekYandexMap() {
         selectedText.textContent = address;
         selectedBlock.style.display = 'flex';
         mapWrapper.style.display = 'none';
+        updateDeliveryCost(address);
     }
 
     function doSearch() {
@@ -330,8 +331,65 @@ function initCdekYandexMap() {
         changeBtn.addEventListener('click', function () {
             selectedBlock.style.display = 'none';
             mapWrapper.style.display = 'block';
+            addressInput.value = '';
+            resetDeliveryCost();
         });
     }
+}
+
+// ===== РАСЧЁТ ДОСТАВКИ СДЭК ПО РЕГИОНУ =====
+// Та же логика на сервере (payment.php) — итоговая сумма пересчитывается
+// и подписывается там, на клиенте только отображение.
+var BOOK_PRICE = 2990;
+
+function detectDeliveryZone(address) {
+    var lower = (address || '').toLowerCase();
+
+    // Москва и Московская область
+    var moscowRe = /моск(?!овск.*обл.*(?!московск))|подольск|балаших|химки|реутов|мытищ|любер|королёв|королев|красногорск|одинцов|жуков|пушкин|щёлков|щелков|долгопруд|зеленоград|солнечногорск|павлов посад|серпухов|видн|лобн|раменск|истр|ногинск|электросталь|орехово-зуев|сергиев посад|дзержинский|чехов|наро-фоминск|можайск|ступин|клин|дмитров|домодедов|апрелевк|бронниц|воскресенск|дедовск|жуковск|зарайск|кашир|коломн|красноарм|лосино-петровск|лыткарин|озёр|озер|пересвет|протвин|пущин|реш|рузск|серебряные пруды|солнечногорск|талдом|фрязин|шатур|щёлков|электрогорск|юбилейн|яхром|подмоск|московская обл/;
+    if (moscowRe.test(lower)) {
+        return { zone: 'msk', name: 'Москва и МО', cost: 300 };
+    }
+
+    // Сибирь и Дальний Восток
+    var siberiaRe = /новосибирск|омск|томск|красноярск|иркутск|якут|саха респ|хабаровск|владивосток|магадан|сахалин|камчат|чукот|петропавловск-камчат|благовещенск|чит(?!к)|улан-удэ|кемеров|барнаул|новокузнецк|ангарск|братск|комсомольск-на-амуре|находк|уссурийск|биробиджан|анадырь|норильск|абакан|горно-алтайск|приморск(?:ий)? край|хабаровск(?:ий)? край|бурят|тыв|тува|хакас|чукотск|еврейск|сибирск|дальневосточн|алтайск(?:ий)? край|забайкальск|южно-сахалинск|нерюнгри|мирный|алдан|тында|свободный|зея|шимановск|райчихинск|белогорск|сковородино|холмск|корсаков|охотск|оха|северо-курильск|елизово|вилюч|ессо/;
+    if (siberiaRe.test(lower)) {
+        return { zone: 'sib', name: 'Сибирь и Дальний Восток', cost: 700 };
+    }
+
+    // Всё остальное — Европейская часть России (включая Урал, Юг, СЗФО, ПФО)
+    return { zone: 'eu', name: 'Европейская часть России', cost: 500 };
+}
+
+function updateDeliveryCost(address) {
+    var zone = detectDeliveryZone(address);
+    var deliveryRow = document.getElementById('deliveryRow');
+    var deliveryLabel = document.getElementById('deliveryLabel');
+    var deliveryCost = document.getElementById('deliveryCost');
+    var totalAmount = document.getElementById('totalAmount');
+    var deliveryZoneInput = document.getElementById('deliveryZone');
+
+    if (!deliveryRow || !totalAmount) return;
+
+    deliveryRow.style.display = 'flex';
+    deliveryLabel.textContent = 'Доставка СДЭК (' + zone.name + ')';
+    deliveryCost.innerHTML = formatPrice(zone.cost) + ' ₽';
+    totalAmount.innerHTML = formatPrice(BOOK_PRICE + zone.cost) + ' ₽';
+    if (deliveryZoneInput) deliveryZoneInput.value = zone.zone;
+}
+
+function resetDeliveryCost() {
+    var deliveryRow = document.getElementById('deliveryRow');
+    var totalAmount = document.getElementById('totalAmount');
+    var deliveryZoneInput = document.getElementById('deliveryZone');
+
+    if (deliveryRow) deliveryRow.style.display = 'none';
+    if (totalAmount) totalAmount.innerHTML = formatPrice(BOOK_PRICE) + ' ₽';
+    if (deliveryZoneInput) deliveryZoneInput.value = '';
+}
+
+function formatPrice(amount) {
+    return String(amount).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 // ===== ORDER FORM (Robokassa) =====
@@ -493,6 +551,12 @@ function initOrderForm() {
         if (!isValid) {
             e.preventDefault();
             return;
+        }
+        // На всякий случай — пересчитываем зону доставки из выбранного адреса
+        var zoneInput = document.getElementById('deliveryZone');
+        var addrInput = document.getElementById('orderCdekPointAddress');
+        if (zoneInput && addrInput && !zoneInput.value && addrInput.value) {
+            zoneInput.value = detectDeliveryZone(addrInput.value).zone;
         }
         if (typeof ym === 'function') ym(108704155, 'reachGoal', 'payment_click');
     });

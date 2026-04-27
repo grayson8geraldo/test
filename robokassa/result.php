@@ -68,10 +68,13 @@ if (strcasecmp($calculatedSignature, $signatureValue) !== 0) {
 }
 
 // Подпись верна — обрабатываем заказ
-$email   = $shpParams['Shp_email']        ?? '';
-$phone   = $shpParams['Shp_phone']        ?? '';
-$name    = $shpParams['Shp_name']         ?? '';
-$address = $shpParams['Shp_cdek_address'] ?? '';
+$email        = $shpParams['Shp_email']         ?? '';
+$phone        = $shpParams['Shp_phone']         ?? '';
+$name         = $shpParams['Shp_name']          ?? '';
+$address      = $shpParams['Shp_cdek_address']  ?? '';
+$bookPrice    = $shpParams['Shp_book_price']    ?? '';
+$deliveryCost = $shpParams['Shp_delivery_cost'] ?? '';
+$deliveryZone = $shpParams['Shp_delivery_zone'] ?? '';
 
 // Логируем подтверждённый заказ
 $paidLog = sprintf(
@@ -91,12 +94,17 @@ $to      = $config['order_email'] ?? 'info@podymakhin.ru';
 $subject = '=?UTF-8?B?' . base64_encode('Новый оплаченный заказ #' . $invId) . '?=';
 $body    = "Новый оплаченный заказ\n\n"
          . "Номер: $invId\n"
-         . "Сумма: $outSum ₽\n"
          . "Режим: " . ($isTest ? 'ТЕСТ' : 'БОЙ') . "\n\n"
-         . "Покупатель: $name\n"
+         . "── Сумма ──\n"
+         . "Книга: $bookPrice ₽\n"
+         . "Доставка ($deliveryZone): $deliveryCost ₽\n"
+         . "Итого оплачено: $outSum ₽\n\n"
+         . "── Покупатель ──\n"
+         . "ФИО: $name\n"
          . "Телефон: $phone\n"
          . "Email: $email\n\n"
-         . "Адрес СДЭК: $address\n\n"
+         . "── Доставка ──\n"
+         . "Пункт СДЭК: $address\n\n"
          . "Отправь книгу на указанный пункт выдачи.";
 $headers = "From: robokassa@podymakhin.ru\r\n"
          . "Reply-To: $email\r\n"

@@ -642,14 +642,16 @@
                         </div>
                         <div class="order-total">
                             <div class="order-total__row"><span>Книга</span><span>2&nbsp;990&nbsp;&#8381;</span></div>
-                            <div class="order-total__row order-total__row--sum"><span>К&nbsp;оплате</span><span>2&nbsp;990&nbsp;&#8381;</span></div>
+                            <div class="order-total__row" id="deliveryRow" style="display:none;"><span id="deliveryLabel">Доставка СДЭК</span><span id="deliveryCost">0&nbsp;&#8381;</span></div>
+                            <div class="order-total__row order-total__row--sum"><span>К&nbsp;оплате</span><span id="totalAmount">2&nbsp;990&nbsp;&#8381;</span></div>
                         </div>
+                        <input type="hidden" name="delivery_zone" id="deliveryZone" value="">
                         <div class="delivery-rates">
-                            <p class="delivery-rates__title">Стоимость доставки СДЭК оплачивается отдельно при&nbsp;получении:</p>
+                            <p class="delivery-rates__title">Стоимость доставки СДЭК до&nbsp;пункта выдачи рассчитывается автоматически после выбора адреса:</p>
                             <ul class="delivery-rates__list">
                                 <li><span>Москва и&nbsp;МО</span><strong>300&nbsp;&#8381;</strong></li>
-                                <li><span>Европейская часть России</span><strong>300&ndash;500&nbsp;&#8381;</strong></li>
-                                <li><span>Сибирь и&nbsp;Дальний Восток</span><strong>500&ndash;700&nbsp;&#8381;</strong></li>
+                                <li><span>Европейская часть России</span><strong>500&nbsp;&#8381;</strong></li>
+                                <li><span>Сибирь и&nbsp;Дальний Восток</span><strong>700&nbsp;&#8381;</strong></li>
                             </ul>
                         </div>
                         <button type="submit" class="btn btn--primary btn--full btn--pulse">Оплатить и заказать</button>
