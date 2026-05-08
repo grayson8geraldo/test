@@ -4,6 +4,10 @@
 # Логи заказов
 /robokassa/*.log
 
+# Подписчики PDF-фрагмента и rate-limit
+/subscribers.csv
+/subscribe-rate.log
+
 # Системные файлы
 .DS_Store
 Thumbs.db

@@ -3,11 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initScrollProgress();
     initScrollAnimations();
-    initCountUp();
     initSmoothScroll();
     initStickyCta();
     initDeliveryChoice();
     initOrderForm();
+    initSubscribeForm();
     initReviewToggle();
     initMetrikaGoals();
 });
@@ -92,46 +92,6 @@ function initScrollAnimations() {
     elements.forEach(el => observer.observe(el));
 }
 
-// ===== COUNT UP ANIMATION =====
-function initCountUp() {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const counters = document.querySelectorAll('[data-count]');
-
-    if (prefersReduced) {
-        counters.forEach(el => { el.textContent = el.dataset.count; });
-        return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const el = entry.target;
-                const target = parseInt(el.dataset.count);
-                animateCount(el, 0, target, 2000);
-                observer.unobserve(el);
-            }
-        });
-    }, { threshold: 0.5 });
-
-    counters.forEach(counter => observer.observe(counter));
-}
-
-function animateCount(element, start, end, duration) {
-    const startTime = performance.now();
-    const range = end - start;
-
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        element.textContent = Math.round(start + range * eased);
-        if (progress < 1) requestAnimationFrame(update);
-    }
-
-    requestAnimationFrame(update);
-}
-
-// ===== COUNTDOWN TIMER =====
 // ===== SMOOTH SCROLL =====
 function initSmoothScroll() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -559,6 +519,74 @@ function initOrderForm() {
             zoneInput.value = detectDeliveryZone(addrInput.value).zone;
         }
         if (typeof ym === 'function') ym(108704155, 'reachGoal', 'payment_click');
+    });
+}
+
+// ===== SUBSCRIBE FORM (PDF lead magnet) =====
+function initSubscribeForm() {
+    const form = document.getElementById('subscribeForm');
+    if (!form) return;
+
+    const emailInput = document.getElementById('subscribeEmail');
+    const errorEl = document.getElementById('subscribeError');
+    const successEl = document.getElementById('subscribeSuccess');
+    const submitBtn = document.getElementById('subscribeBtn');
+
+    function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.add('visible');
+        emailInput.classList.add('invalid');
+    }
+
+    function clearError() {
+        errorEl.textContent = '';
+        errorEl.classList.remove('visible');
+        emailInput.classList.remove('invalid');
+    }
+
+    emailInput.addEventListener('input', clearError);
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const email = emailInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+        if (!email) { showError('Введите email'); return; }
+        if (!emailRegex.test(email)) { showError('Введите корректный email'); return; }
+
+        clearError();
+
+        const originalBtnHTML = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправляем…';
+
+        const formData = new FormData();
+        formData.append('email', email);
+
+        fetch('/subscribe.php', {
+            method: 'POST',
+            body: formData
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                if (data && data.success) {
+                    form.style.display = 'none';
+                    successEl.style.display = 'flex';
+                    if (typeof ym === 'function') {
+                        ym(108704155, 'reachGoal', 'subscribe_pdf');
+                    }
+                } else {
+                    showError((data && data.error) || 'Не удалось отправить письмо. Попробуйте позже.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHTML;
+                }
+            })
+            .catch(function () {
+                showError('Ошибка соединения. Проверьте интернет и попробуйте ещё раз.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHTML;
+            });
     });
 }
 

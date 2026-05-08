@@ -136,19 +136,19 @@
                 </p>
                 <div class="hero__stats">
                     <div class="hero__stat">
-                        <span class="hero__stat-number" data-count="476">0</span>
+                        <span class="hero__stat-number">476</span>
                         <span class="hero__stat-label">страниц</span>
                     </div>
                     <div class="hero__stat">
-                        <span class="hero__stat-number" data-count="1048">0</span>
+                        <span class="hero__stat-number">1&nbsp;048</span>
                         <span class="hero__stat-label">фотографий</span>
                     </div>
                     <div class="hero__stat">
-                        <span class="hero__stat-number" data-count="135">0</span>
+                        <span class="hero__stat-number">135</span>
                         <span class="hero__stat-label">рисунков</span>
                     </div>
                     <div class="hero__stat">
-                        <span class="hero__stat-number" data-count="12">0</span>
+                        <span class="hero__stat-number">12</span>
                         <span class="hero__stat-label">глав</span>
                     </div>
                 </div>
@@ -169,10 +169,41 @@
                 <img src="book-3d.png" alt="Обложка книги «Каркас над пропастью: строю дом на болоте» — Юрий Подымахин" class="hero__book-img">
             </div>
         </div>
-        <a href="#problems" class="hero__scroll-indicator" aria-label="Листайте вниз">
+        <a href="#free-chapter" class="hero__scroll-indicator" aria-label="Листайте вниз">
             <span>Листайте вниз</span>
             <div class="scroll-arrow"></div>
         </a>
+    </section>
+
+    <!-- ===== БЕСПЛАТНЫЙ ФРАГМЕНТ (Lead Magnet) ===== -->
+    <section class="free-chapter" id="free-chapter">
+        <div class="container">
+            <div class="free-chapter__card" data-animate="fade-up">
+                <div class="free-chapter__content">
+                    <span class="section-tag">Бесплатно</span>
+                    <h2 class="free-chapter__title">Получите бесплатный<br>фрагмент книги на&nbsp;email</h2>
+                    <p class="free-chapter__text">Оставьте email &mdash; пришлём PDF-фрагмент книги и&nbsp;полезные материалы по&nbsp;строительству на&nbsp;болотистом грунте от&nbsp;автора.</p>
+                    <form class="subscribe-form" id="subscribeForm" action="/subscribe.php" method="POST" novalidate>
+                        <div class="subscribe-form__row">
+                            <input type="email" name="email" placeholder="Ваш email" required class="subscribe-form__input" id="subscribeEmail" autocomplete="email">
+                            <button type="submit" class="btn btn--primary btn--lg" id="subscribeBtn">
+                                Получить PDF
+                                <svg class="btn__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12m0 0l-4-4m4 4l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                        <span class="subscribe-form__error" id="subscribeError"></span>
+                    </form>
+                    <div class="subscribe-success" id="subscribeSuccess" style="display:none;">
+                        <span class="subscribe-success__icon">&#10003;</span>
+                        <div>
+                            <strong>Готово!</strong>
+                            <p>PDF-фрагмент отправлен на&nbsp;ваш email. Проверьте папку &laquo;Входящие&raquo; (или &laquo;Спам&raquo;) в&nbsp;течение пары минут.</p>
+                        </div>
+                    </div>
+                    <p class="free-chapter__note">PDF приходит мгновенно &bull; Без&nbsp;спама &bull; Можно отписаться в&nbsp;любой момент</p>
+                </div>
+            </div>
+        </div>
     </section>
 
 
@@ -441,24 +472,6 @@
         </div>
     </section>
 
-
-    <!-- ===== БЕСПЛАТНЫЙ МАТЕРИАЛ ===== -->
-    <section class="free-chapter" id="free-chapter">
-        <div class="container">
-            <div class="free-chapter__card" data-animate="fade-up">
-                <div class="free-chapter__content">
-                    <span class="section-tag">Бесплатно</span>
-                    <h2 class="free-chapter__title">Скачайте бесплатный<br>ознакомительный материал</h2>
-                    <p class="free-chapter__text">Познакомьтесь с&nbsp;подходом автора &mdash; скачайте бесплатный фрагмент книги и&nbsp;убедитесь в&nbsp;качестве материала.</p>
-                    <a href="bes_material.pdf" class="btn btn--primary btn--lg" download>
-                        Скачать бесплатно (PDF)
-                        <svg class="btn__arrow" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 4v8m0 0l-3-3m3 3l3-3M4 14h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </a>
-                    <p class="free-chapter__note">PDF &bull; Без&nbsp;регистрации &bull; Скачивается мгновенно</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- ===== ДЛЯ КОГО / НЕ ДЛЯ КОГО ===== -->
     <section class="for-whom" id="for-whom">
