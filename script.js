@@ -323,29 +323,37 @@ function detectDeliveryZone(address) {
 
 function updateDeliveryCost(address) {
     var zone = detectDeliveryZone(address);
-    var deliveryRow = document.getElementById('deliveryRow');
     var deliveryLabel = document.getElementById('deliveryLabel');
     var deliveryCost = document.getElementById('deliveryCost');
     var totalAmount = document.getElementById('totalAmount');
     var deliveryZoneInput = document.getElementById('deliveryZone');
+    var submitBtn = document.getElementById('orderSubmitBtn');
+    var stickyPrice = document.getElementById('stickyPrice');
 
-    if (!deliveryRow || !totalAmount) return;
+    var total = BOOK_PRICE + zone.cost;
 
-    deliveryRow.style.display = 'flex';
-    deliveryLabel.textContent = 'Доставка СДЭК (' + zone.name + ')';
-    deliveryCost.innerHTML = formatPrice(zone.cost) + ' ₽';
-    totalAmount.innerHTML = formatPrice(BOOK_PRICE + zone.cost) + ' ₽';
+    if (deliveryLabel) deliveryLabel.textContent = 'Доставка СДЭК (' + zone.name + ')';
+    if (deliveryCost) deliveryCost.innerHTML = formatPrice(zone.cost) + ' ₽';
+    if (totalAmount) totalAmount.innerHTML = formatPrice(total) + ' ₽';
     if (deliveryZoneInput) deliveryZoneInput.value = zone.zone;
+    if (submitBtn) submitBtn.innerHTML = 'Оплатить ' + formatPrice(total) + ' ₽';
+    if (stickyPrice) stickyPrice.innerHTML = '<strong>' + formatPrice(total) + ' ₽</strong>';
 }
 
 function resetDeliveryCost() {
-    var deliveryRow = document.getElementById('deliveryRow');
+    var deliveryLabel = document.getElementById('deliveryLabel');
+    var deliveryCost = document.getElementById('deliveryCost');
     var totalAmount = document.getElementById('totalAmount');
     var deliveryZoneInput = document.getElementById('deliveryZone');
+    var submitBtn = document.getElementById('orderSubmitBtn');
+    var stickyPrice = document.getElementById('stickyPrice');
 
-    if (deliveryRow) deliveryRow.style.display = 'none';
-    if (totalAmount) totalAmount.innerHTML = formatPrice(BOOK_PRICE) + ' ₽';
+    if (deliveryLabel) deliveryLabel.innerHTML = 'Доставка СДЭК до ПВЗ';
+    if (deliveryCost) deliveryCost.innerHTML = 'от 300 ₽';
+    if (totalAmount) totalAmount.innerHTML = 'от ' + formatPrice(BOOK_PRICE + 300) + ' ₽';
     if (deliveryZoneInput) deliveryZoneInput.value = '';
+    if (submitBtn) submitBtn.innerHTML = 'Оплатить ' + formatPrice(BOOK_PRICE) + ' ₽';
+    if (stickyPrice) stickyPrice.innerHTML = '<strong>' + formatPrice(BOOK_PRICE) + ' ₽</strong>';
 }
 
 function formatPrice(amount) {
@@ -353,33 +361,23 @@ function formatPrice(amount) {
 }
 
 // ===== ORDER FORM (Robokassa) =====
-// Все реквизиты Робокассы (MerchantLogin, Пароль #1/#2, цена, режим тест/бой)
-// хранятся на сервере в /robokassa/config.php.
-// Подпись формируется в /robokassa/payment.php — это безопасно.
-// Клиент только валидирует поля и POST-ит форму на payment.php.
 
 function initOrderForm() {
     const form = document.getElementById('orderFormCdek');
     if (!form) return;
 
-    const surnameInput = document.getElementById('orderSurname');
-    const nameInput = document.getElementById('orderName');
+    const fioInput = document.getElementById('orderFio');
     const phoneInput = document.getElementById('orderPhone');
-    const emailInput = document.getElementById('orderEmail');
 
-    // ===== ФАМИЛИЯ: только буквы, пробелы, дефис =====
-    surnameInput.addEventListener('input', function () {
+    fioInput.addEventListener('input', function () {
         this.value = this.value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '');
     });
 
-    // ===== МАСКА ТЕЛЕФОНА +7 (___) ___-__-__ =====
     function formatPhone(value) {
         var digits = value.replace(/\D/g, '');
-        // Если начинается с 8, заменяем на 7
         if (digits.length > 0 && digits[0] === '8') {
             digits = '7' + digits.substring(1);
         }
-        // Если не начинается с 7, добавляем
         if (digits.length > 0 && digits[0] !== '7') {
             digits = '7' + digits;
         }
@@ -410,12 +408,6 @@ function initOrderForm() {
         if (this.value === '+7 (' || this.value === '+7') this.value = '';
     });
 
-    // ===== ИМЯ: только буквы, пробелы, дефис =====
-    nameInput.addEventListener('input', function () {
-        this.value = this.value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '');
-    });
-
-    // ===== ВАЛИДАЦИЯ =====
     function showError(inputEl, errorId, message) {
         var errorEl = document.getElementById(errorId);
         if (errorEl) {
@@ -440,19 +432,11 @@ function initOrderForm() {
         if (inputEl.value.trim()) inputEl.classList.add('valid');
     }
 
-    function validateSurname() {
-        var val = surnameInput.value.trim();
-        if (!val) { showError(surnameInput, 'errorSurname', 'Введите фамилию'); return false; }
-        if (val.length < 2) { showError(surnameInput, 'errorSurname', 'Фамилия слишком короткая'); return false; }
-        markValid(surnameInput, 'errorSurname');
-        return true;
-    }
-
-    function validateName() {
-        var val = nameInput.value.trim();
-        if (!val) { showError(nameInput, 'errorName', 'Введите имя'); return false; }
-        if (val.length < 2) { showError(nameInput, 'errorName', 'Имя слишком короткое'); return false; }
-        markValid(nameInput, 'errorName');
+    function validateFio() {
+        var val = fioInput.value.trim();
+        if (!val) { showError(fioInput, 'errorFio', 'Введите ФИО'); return false; }
+        if (val.length < 3) { showError(fioInput, 'errorFio', 'ФИО слишком короткое'); return false; }
+        markValid(fioInput, 'errorFio');
         return true;
     }
 
@@ -461,15 +445,6 @@ function initOrderForm() {
         if (!digits || digits.length < 2) { showError(phoneInput, 'errorPhone', 'Введите номер телефона'); return false; }
         if (digits.length !== 11) { showError(phoneInput, 'errorPhone', 'Номер должен содержать 11 цифр'); return false; }
         markValid(phoneInput, 'errorPhone');
-        return true;
-    }
-
-    function validateEmail() {
-        var val = emailInput.value.trim();
-        if (!val) { showError(emailInput, 'errorEmail', 'Введите email'); return false; }
-        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-        if (!emailRegex.test(val)) { showError(emailInput, 'errorEmail', 'Введите корректный email'); return false; }
-        markValid(emailInput, 'errorEmail');
         return true;
     }
 
@@ -484,35 +459,22 @@ function initOrderForm() {
         return true;
     }
 
-    // Валидация при потере фокуса
-    surnameInput.addEventListener('blur', validateSurname);
-    nameInput.addEventListener('blur', validateName);
+    fioInput.addEventListener('blur', validateFio);
     phoneInput.addEventListener('blur', validatePhone);
-    emailInput.addEventListener('blur', validateEmail);
 
-    // Убирать ошибку при вводе
-    surnameInput.addEventListener('input', function () { if (surnameInput.classList.contains('invalid')) validateSurname(); });
-    nameInput.addEventListener('input', function () { if (nameInput.classList.contains('invalid')) validateName(); });
+    fioInput.addEventListener('input', function () { if (fioInput.classList.contains('invalid')) validateFio(); });
     phoneInput.addEventListener('input', function () { if (phoneInput.classList.contains('invalid')) validatePhone(); });
-    emailInput.addEventListener('input', function () { if (emailInput.classList.contains('invalid')) validateEmail(); });
 
-    // ===== ОТПРАВКА ФОРМЫ =====
-    // Форма нативно POST-ом уходит на /robokassa/payment.php,
-    // где сервер формирует подпись с Паролем #1 (на клиенте пароль не хранится!)
-    // и редиректит на Робокассу. Здесь делаем только клиентскую валидацию.
     form.addEventListener('submit', (e) => {
         var isValid = true;
-        if (!validateSurname()) isValid = false;
-        if (!validateName()) isValid = false;
-        if (!validatePhone()) isValid = false;
-        if (!validateEmail()) isValid = false;
         if (!validateCdek()) isValid = false;
+        if (!validateFio()) isValid = false;
+        if (!validatePhone()) isValid = false;
 
         if (!isValid) {
             e.preventDefault();
             return;
         }
-        // На всякий случай — пересчитываем зону доставки из выбранного адреса
         var zoneInput = document.getElementById('deliveryZone');
         var addrInput = document.getElementById('orderCdekPointAddress');
         if (zoneInput && addrInput && !zoneInput.value && addrInput.value) {

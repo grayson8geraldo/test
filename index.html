@@ -586,7 +586,7 @@
                     <div class="price-card__price">
                         <span class="price-card__current">2 990 <small>&#8381;</small></span>
                     </div>
-                    <p class="price-card__delivery-note">* цена за&nbsp;книгу без&nbsp;учёта доставки</p>
+                    <p class="price-card__delivery-note">Доставка СДЭК до&nbsp;пункта выдачи по&nbsp;всей России</p>
                     <ul class="price-card__features">
                         <li class="included">Книга в&nbsp;твёрдом переплёте, 476 стр.</li>
                         <li class="included">1 048 фото, 135 рисунков</li>
@@ -617,28 +617,10 @@
 
                     <!-- Форма СДЭК -->
                     <form class="order-form" id="orderFormCdek" action="/robokassa/payment.php" method="POST" novalidate>
-                        <div class="order-form__row">
-                            <div class="order-form__field">
-                                <input type="text" name="surname" placeholder="Фамилия" required class="order-form__input" id="orderSurname" autocomplete="family-name">
-                                <span class="order-form__error" id="errorSurname"></span>
-                            </div>
-                            <div class="order-form__field">
-                                <input type="text" name="name" placeholder="Имя" required class="order-form__input" id="orderName" autocomplete="given-name">
-                                <span class="order-form__error" id="errorName"></span>
-                            </div>
-                        </div>
-                        <div class="order-form__field">
-                            <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" required class="order-form__input" id="orderPhone" autocomplete="tel">
-                            <span class="order-form__error" id="errorPhone"></span>
-                        </div>
-                        <div class="order-form__field">
-                            <input type="email" name="email" placeholder="Email" required class="order-form__input" id="orderEmail" autocomplete="email">
-                            <span class="order-form__error" id="errorEmail"></span>
-                        </div>
                         <div class="order-form__field">
                             <input type="hidden" name="cdek_address" id="orderCdekPointAddress">
                             <div class="cdek-search">
-                                <input type="text" placeholder="Введите ваш адрес или город для поиска пункта СДЭК" class="order-form__input" id="cdekAddressSearch">
+                                <input type="text" placeholder="Введите город для поиска пункта СДЭК" class="order-form__input" id="cdekAddressSearch">
                                 <button type="button" class="cdek-search__btn" id="cdekSearchBtn" aria-label="Найти пункты СДЭК">
                                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="2"/><path d="M12 12l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                                 </button>
@@ -653,21 +635,21 @@
                             </div>
                             <span class="order-form__error" id="errorCdek"></span>
                         </div>
+                        <div class="order-form__field">
+                            <input type="text" name="fio" placeholder="ФИО" required class="order-form__input" id="orderFio" autocomplete="name">
+                            <span class="order-form__error" id="errorFio"></span>
+                        </div>
+                        <div class="order-form__field">
+                            <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" required class="order-form__input" id="orderPhone" autocomplete="tel">
+                            <span class="order-form__error" id="errorPhone"></span>
+                        </div>
                         <div class="order-total">
                             <div class="order-total__row"><span>Книга</span><span>2&nbsp;990&nbsp;&#8381;</span></div>
-                            <div class="order-total__row" id="deliveryRow" style="display:none;"><span id="deliveryLabel">Доставка СДЭК</span><span id="deliveryCost">0&nbsp;&#8381;</span></div>
-                            <div class="order-total__row order-total__row--sum"><span>К&nbsp;оплате</span><span id="totalAmount">2&nbsp;990&nbsp;&#8381;</span></div>
+                            <div class="order-total__row" id="deliveryRow"><span id="deliveryLabel">Доставка СДЭК до&nbsp;ПВЗ</span><span id="deliveryCost">от&nbsp;300&nbsp;&#8381;</span></div>
+                            <div class="order-total__row order-total__row--sum"><span>К&nbsp;оплате</span><span id="totalAmount">от&nbsp;3&nbsp;290&nbsp;&#8381;</span></div>
                         </div>
                         <input type="hidden" name="delivery_zone" id="deliveryZone" value="">
-                        <div class="delivery-rates">
-                            <p class="delivery-rates__title">Стоимость доставки СДЭК до&nbsp;пункта выдачи рассчитывается автоматически после выбора адреса:</p>
-                            <ul class="delivery-rates__list">
-                                <li><span>Москва и&nbsp;МО</span><strong>300&nbsp;&#8381;</strong></li>
-                                <li><span>Европейская часть России</span><strong>500&nbsp;&#8381;</strong></li>
-                                <li><span>Сибирь и&nbsp;Дальний Восток</span><strong>700&nbsp;&#8381;</strong></li>
-                            </ul>
-                        </div>
-                        <button type="submit" class="btn btn--primary btn--full btn--pulse">Оплатить и заказать</button>
+                        <button type="submit" class="btn btn--primary btn--full btn--pulse" id="orderSubmitBtn">Оплатить 2&nbsp;990&nbsp;&#8381;</button>
                         <p class="order-form__note">Отправка в&nbsp;течение 2&ndash;3 дней после оплаты</p>
                     </form>
 
@@ -816,9 +798,9 @@
     <div class="sticky-cta" id="stickyCta" aria-hidden="true">
         <div class="sticky-cta__inner">
             <div class="sticky-cta__info">
-                <span class="sticky-cta__price"><strong>2 990 &#8381;</strong></span>
+                <span class="sticky-cta__price" id="stickyPrice"><strong>2 990 &#8381;</strong></span>
             </div>
-            <a href="#pricing" class="btn btn--primary btn--sm">Заказать книгу</a>
+            <a href="#pricing" class="btn btn--primary btn--sm" id="stickyBtn">Заказать книгу</a>
         </div>
     </div>
 

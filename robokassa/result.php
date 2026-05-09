@@ -68,7 +68,6 @@ if (strcasecmp($calculatedSignature, $signatureValue) !== 0) {
 }
 
 // Подпись верна — обрабатываем заказ
-$email        = $shpParams['Shp_email']         ?? '';
 $phone        = $shpParams['Shp_phone']         ?? '';
 $name         = $shpParams['Shp_name']          ?? '';
 $address      = $shpParams['Shp_cdek_address']  ?? '';
@@ -78,11 +77,10 @@ $deliveryZone = $shpParams['Shp_delivery_zone'] ?? '';
 
 // Логируем подтверждённый заказ
 $paidLog = sprintf(
-    "[%s] PAID InvId=%s Sum=%s Email=%s Phone=%s Name=%s Address=%s\n",
+    "[%s] PAID InvId=%s Sum=%s Phone=%s Name=%s Address=%s\n",
     date('Y-m-d H:i:s'),
     $invId,
     $outSum,
-    $email,
     $phone,
     $name,
     $address
@@ -101,13 +99,11 @@ $body    = "Новый оплаченный заказ\n\n"
          . "Итого оплачено: $outSum ₽\n\n"
          . "── Покупатель ──\n"
          . "ФИО: $name\n"
-         . "Телефон: $phone\n"
-         . "Email: $email\n\n"
+         . "Телефон: $phone\n\n"
          . "── Доставка ──\n"
          . "Пункт СДЭК: $address\n\n"
          . "Отправь книгу на указанный пункт выдачи.";
 $headers = "From: robokassa@podymakhin.ru\r\n"
-         . "Reply-To: $email\r\n"
          . "Content-Type: text/plain; charset=UTF-8\r\n";
 @mail($to, $subject, $body, $headers);
 

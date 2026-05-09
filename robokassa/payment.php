@@ -30,17 +30,13 @@ function clean(string $value, int $max = 255): string {
     return mb_substr($value, 0, $max, 'UTF-8');
 }
 
-$surname        = clean($_POST['surname']        ?? '', 50);
-$name           = clean($_POST['name']           ?? '', 50);
+$fio            = clean($_POST['fio']             ?? '', 100);
 $phone          = clean($_POST['phone']          ?? '', 20);
-$email          = clean($_POST['email']          ?? '', 100);
 $cdekAddress    = clean($_POST['cdek_address']   ?? '', 255);
 
 $errors = [];
-if (mb_strlen($surname, 'UTF-8') < 2) $errors[] = 'Фамилия';
-if (mb_strlen($name, 'UTF-8') < 2)    $errors[] = 'Имя';
+if (mb_strlen($fio, 'UTF-8') < 3) $errors[] = 'ФИО';
 if (!preg_match('/^\+?\d[\d\s\(\)\-]{9,}$/', $phone)) $errors[] = 'Телефон';
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Email';
 if (mb_strlen($cdekAddress, 'UTF-8') < 5) $errors[] = 'Адрес СДЭК';
 
 if ($errors) {
@@ -117,8 +113,7 @@ $shpParams = [
     'Shp_cdek_address'  => $cdekAddress,
     'Shp_delivery_cost' => (string)$delivery['cost'],
     'Shp_delivery_zone' => $delivery['name'],
-    'Shp_email'         => $email,
-    'Shp_name'          => $surname . ' ' . $name,
+    'Shp_name'          => $fio,
     'Shp_phone'         => $phone,
 ];
 ksort($shpParams);
@@ -135,12 +130,11 @@ $signatureValue = hash($algo, $signatureString);
 
 // Логируем заказ до оплаты (на случай, если Result URL не придёт)
 $logEntry = sprintf(
-    "[%s] InvId=%d Email=%s Phone=%s Name=%s Address=%s\n",
+    "[%s] InvId=%d Phone=%s Name=%s Address=%s\n",
     date('Y-m-d H:i:s'),
     $invId,
-    $email,
     $phone,
-    $surname . ' ' . $name,
+    $fio,
     $cdekAddress
 );
 @file_put_contents(__DIR__ . '/orders.log', $logEntry, FILE_APPEND | LOCK_EX);
@@ -152,7 +146,6 @@ $params = array_merge([
     'InvId'          => $invId,
     'Description'    => $description,
     'SignatureValue' => $signatureValue,
-    'Email'          => $email,
     'IsTest'         => $isTest ? '1' : '0',
 ], $shpParams);
 

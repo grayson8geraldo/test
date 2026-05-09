@@ -378,13 +378,7 @@ button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 .delivery-option--disabled .delivery-option__content strong{color:var(--c-text-light)}
 .delivery-option--disabled .delivery-option__content span{color:#b4413c;font-weight:500}
 
-/* Delivery rates by region */
-.delivery-rates{margin:12px 0 16px;padding:14px 16px;background:#f5f3ec;border-radius:var(--r-sm);border-left:3px solid var(--c-accent)}
-.delivery-rates__title{font-size:13px;font-weight:600;color:var(--c-text);margin:0 0 8px;line-height:1.4}
-.delivery-rates__list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
-.delivery-rates__list li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;color:var(--c-text-light)}
-.delivery-rates__list li > span{flex:1;min-width:0}
-.delivery-rates__list li strong{flex-shrink:0;color:var(--c-text);font-weight:600;white-space:nowrap;text-align:right}
+
 
 /* Stores block */
 .stores{margin-top:32px;padding:28px 24px;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);text-align:center}
