@@ -352,8 +352,8 @@ function resetDeliveryCost() {
     if (deliveryCost) deliveryCost.innerHTML = 'от 300 ₽';
     if (totalAmount) totalAmount.innerHTML = 'от ' + formatPrice(BOOK_PRICE + 300) + ' ₽';
     if (deliveryZoneInput) deliveryZoneInput.value = '';
-    if (submitBtn) submitBtn.innerHTML = 'Оплатить ' + formatPrice(BOOK_PRICE) + ' ₽';
-    if (stickyPrice) stickyPrice.innerHTML = '<strong>' + formatPrice(BOOK_PRICE) + ' ₽</strong>';
+    if (submitBtn) submitBtn.innerHTML = 'Оплатить от ' + formatPrice(BOOK_PRICE + 300) + ' ₽';
+    if (stickyPrice) stickyPrice.innerHTML = 'от <strong>' + formatPrice(BOOK_PRICE + 300) + ' ₽</strong>';
 }
 
 function formatPrice(amount) {
