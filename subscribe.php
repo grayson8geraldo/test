@@ -4,24 +4,75 @@
  *
  * Принимает email из формы лид-магнита, валидирует, сохраняет в список
  * подписчиков и отправляет PDF-фрагмент книги в письме (вложением).
- * Возвращает JSON: {success: bool, error?: string}.
+ * AJAX-запрос (X-Requested-With) → JSON, обычный POST → HTML-страница.
  */
 
 declare(strict_types=1);
 
-header('Content-Type: application/json; charset=utf-8');
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+    && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+if ($isAjax) {
+    header('Content-Type: application/json; charset=utf-8');
+}
+
+function respondAndExit(bool $success, string $error = ''): void {
+    global $isAjax;
+
+    if ($isAjax) {
+        echo $success
+            ? json_encode(['success' => true])
+            : json_encode(['success' => false, 'error' => $error]);
+        exit;
+    }
+
+    $title   = $success ? 'Материалы отправлены!' : 'Ошибка';
+    $icon    = $success ? '&#10003;' : '&#9888;';
+    $iconBg  = $success ? '#e8f5e9' : '#fff5e6';
+    $iconClr = $success ? '#27ae60' : '#d4a843';
+    $heading = $success
+        ? 'Спасибо за интерес к книге!'
+        : 'Не удалось отправить';
+    $text    = $success
+        ? 'Бесплатный фрагмент книги &laquo;Каркас над пропастью&raquo; отправлен на&nbsp;ваш email. Проверьте папку &laquo;Входящие&raquo; или &laquo;Спам&raquo; в&nbsp;течение пары минут.'
+        : htmlspecialchars($error, ENT_QUOTES, 'UTF-8');
+
+    echo <<<HTML
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{$title} — Podymakhin.ru</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#fafaf7;color:#2d3436;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:480px;width:100%;background:#fff;border-radius:16px;padding:40px 32px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+.icon{width:64px;height:64px;margin:0 auto 20px;border-radius:50%;background:{$iconBg};display:flex;align-items:center;justify-content:center;font-size:28px;color:{$iconClr}}
+h1{font-size:22px;color:#1a3c28;margin-bottom:12px}
+p{font-size:15px;line-height:1.6;color:#555;margin-bottom:16px}
+.btn{display:inline-block;padding:12px 28px;background:#1a3c28;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;margin-top:8px;transition:opacity .2s}
+.btn:hover{opacity:.9}
+.note{font-size:13px;color:#888;margin-top:20px;line-height:1.5}
+</style></head><body>
+<div class="card">
+  <div class="icon">{$icon}</div>
+  <h1>{$heading}</h1>
+  <p>{$text}</p>
+  <a href="/" class="btn">Вернуться на сайт</a>
+  <a href="/#pricing" class="btn" style="background:#d4a843;color:#1a3c28;">Заказать полное издание</a>
+  <p class="note">В полной книге 476 страниц, 1&nbsp;048 фотографий и 135 рисунков &mdash; от&nbsp;геологии участка до&nbsp;забора.</p>
+</div></body></html>
+HTML;
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Method Not Allowed']);
-    exit;
+    respondAndExit(false, 'Method Not Allowed');
 }
 
 $email = trim((string)($_POST['email'] ?? ''));
 
 if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['success' => false, 'error' => 'Введите корректный email']);
-    exit;
+    respondAndExit(false, 'Введите корректный email');
 }
 
 // Простой rate-limit по IP — не более 5 подписок с одного IP за 10 минут.
@@ -42,8 +93,7 @@ if (file_exists($rateFile)) {
 }
 $ipAttempts = array_filter($attempts, fn($p) => $p[1] === $ip);
 if (count($ipAttempts) >= $maxPerWindow) {
-    echo json_encode(['success' => false, 'error' => 'Слишком много попыток. Попробуйте через несколько минут.']);
-    exit;
+    respondAndExit(false, 'Слишком много попыток. Попробуйте через несколько минут.');
 }
 $attempts[] = [$now, $ip];
 $rateContent = '';
@@ -65,8 +115,7 @@ $entry = sprintf(
 // Проверяем наличие PDF
 $pdfPath = __DIR__ . '/bes_material.pdf';
 if (!file_exists($pdfPath)) {
-    echo json_encode(['success' => false, 'error' => 'Файл временно недоступен. Напишите на info@podymakhin.ru']);
-    exit;
+    respondAndExit(false, 'Файл временно недоступен. Напишите на info@podymakhin.ru');
 }
 
 // Готовим письмо с вложением PDF
@@ -113,10 +162,7 @@ $adminHeaders = "From: noreply@podymakhin.ru\r\n"
 @mail('info@podymakhin.ru', $adminSubject, $adminBody, $adminHeaders);
 
 if ($sent) {
-    echo json_encode(['success' => true]);
+    respondAndExit(true);
 } else {
-    echo json_encode([
-        'success' => false,
-        'error' => 'Не удалось отправить письмо. Напишите на info@podymakhin.ru — пришлём вручную.'
-    ]);
+    respondAndExit(false, 'Не удалось отправить письмо. Напишите на info@podymakhin.ru — пришлём вручную.');
 }

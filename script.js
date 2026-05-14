@@ -368,6 +368,7 @@ function initOrderForm() {
 
     const fioInput = document.getElementById('orderFio');
     const phoneInput = document.getElementById('orderPhone');
+    if (!fioInput || !phoneInput) return;
 
     fioInput.addEventListener('input', function () {
         this.value = this.value.replace(/[^A-Za-zА-Яа-яЁё\s\-]/g, '');
@@ -528,6 +529,7 @@ function initSubscribeForm() {
 
         fetch('/subscribe.php', {
             method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
             body: formData
         })
             .then(function (response) { return response.json(); })
