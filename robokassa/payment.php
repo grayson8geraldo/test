@@ -139,8 +139,6 @@ if (!empty($config['tax_system'])) {
 }
 
 $receiptJson = json_encode($receipt, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-// Для подписи Receipt нужно URL-кодировать — это требование документации Робокассы.
-$receiptForSignature = urlencode($receiptJson);
 
 // Shp-параметры возвращаются обратно в Result URL вместе с оплатой.
 // ВНИМАНИЕ: они должны быть отсортированы по алфавиту при формировании подписи.
@@ -155,8 +153,10 @@ $shpParams = [
 ksort($shpParams);
 
 // Формируем строку для подписи:
-// MerchantLogin:OutSum:InvId:Receipt(urlencoded):Password#1:Shp_key1=value1:Shp_key2=value2...
-$signatureParts = [$merchantLogin, $outSum, (string)$invId, $receiptForSignature, $password1];
+// MerchantLogin:OutSum:InvId:Receipt(сырой JSON!):Password#1:Shp_key1=value1:...
+// ВАЖНО: Receipt в подписи идёт БЕЗ URL-кодирования.
+// URL-кодирование — только при передаче параметра в форме.
+$signatureParts = [$merchantLogin, $outSum, (string)$invId, $receiptJson, $password1];
 foreach ($shpParams as $k => $v) {
     $signatureParts[] = $k . '=' . $v;
 }
