@@ -106,6 +106,39 @@ $delivery       = detectDeliveryCost($cdekAddress);
 $totalAmount    = $bookPrice + $delivery['cost'];
 $outSum         = number_format($totalAmount, 2, '.', '');
 
+// Формируем Receipt с номенклатурой (требование 54-ФЗ).
+// Без него Робокасса не выставит фискальный чек и часть способов оплаты пропадёт.
+// sno: система налогообложения (osn / usn_income / usn_income_outcome / patent / esn)
+// tax: НДС (none / vat0 / vat10 / vat20 / vat110 / vat120) — для УСН/самозанятых "none"
+$snoSystem = $config['tax_system'] ?? 'usn_income';
+$taxRate   = $config['tax_rate']   ?? 'none';
+
+$receipt = [
+    'sno'   => $snoSystem,
+    'items' => [
+        [
+            'name'           => 'Книга «Каркас над пропастью: строю дом на болоте»',
+            'quantity'       => 1,
+            'sum'            => (float)$bookPrice,
+            'payment_method' => 'full_payment',
+            'payment_object' => 'commodity',
+            'tax'            => $taxRate,
+        ],
+        [
+            'name'           => 'Доставка СДЭК (' . $delivery['name'] . ')',
+            'quantity'       => 1,
+            'sum'            => (float)$delivery['cost'],
+            'payment_method' => 'full_payment',
+            'payment_object' => 'service',
+            'tax'            => $taxRate,
+        ],
+    ],
+];
+
+$receiptJson = json_encode($receipt, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+// Для подписи Receipt нужно URL-кодировать — это требование документации Робокассы.
+$receiptForSignature = urlencode($receiptJson);
+
 // Shp-параметры возвращаются обратно в Result URL вместе с оплатой.
 // ВНИМАНИЕ: они должны быть отсортированы по алфавиту при формировании подписи.
 $shpParams = [
@@ -119,8 +152,8 @@ $shpParams = [
 ksort($shpParams);
 
 // Формируем строку для подписи:
-// MerchantLogin:OutSum:InvId:Password#1:Shp_key1=value1:Shp_key2=value2...
-$signatureParts = [$merchantLogin, $outSum, (string)$invId, $password1];
+// MerchantLogin:OutSum:InvId:Receipt(urlencoded):Password#1:Shp_key1=value1:Shp_key2=value2...
+$signatureParts = [$merchantLogin, $outSum, (string)$invId, $receiptForSignature, $password1];
 foreach ($shpParams as $k => $v) {
     $signatureParts[] = $k . '=' . $v;
 }
@@ -139,17 +172,47 @@ $logEntry = sprintf(
 );
 @file_put_contents(__DIR__ . '/orders.log', $logEntry, FILE_APPEND | LOCK_EX);
 
-// Собираем параметры для Робокассы
+// Собираем параметры для Робокассы. Receipt передаём как сырой JSON —
+// браузер URL-кодирует его при отправке формы POST, и это даст ту же
+// строку, которую мы использовали в подписи.
 $params = array_merge([
     'MerchantLogin'  => $merchantLogin,
     'OutSum'         => $outSum,
     'InvId'          => $invId,
     'Description'    => $description,
+    'Receipt'        => $receiptJson,
     'SignatureValue' => $signatureValue,
     'IsTest'         => $isTest ? '1' : '0',
 ], $shpParams);
 
-$url = 'https://auth.robokassa.ru/Merchant/Index.aspx?' . http_build_query($params);
-
-header('Location: ' . $url);
+// Отправляем через автосабмит POST-формы (Receipt с номенклатурой
+// может быть большим, GET-редирект упирается в ограничения длины URL).
+header('Content-Type: text/html; charset=utf-8');
+?>
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8">
+<title>Перенаправление на оплату...</title>
+<style>
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#fafaf7;color:#2d3436;min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:20px}
+.card{max-width:420px;text-align:center;background:#fff;border-radius:16px;padding:32px;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+.spinner{width:48px;height:48px;border:4px solid #f5f3ec;border-top-color:#d4a843;border-radius:50%;margin:0 auto 16px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:18px;color:#1a3c28;margin:0 0 8px}
+p{font-size:14px;color:#666;margin:0 0 16px}
+.btn{display:inline-block;padding:12px 24px;background:#1a3c28;color:#fff;border:0;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none}
+</style></head><body>
+<div class="card">
+  <div class="spinner"></div>
+  <h1>Перенаправляем на оплату...</h1>
+  <p>Если страница не открылась автоматически — нажмите кнопку.</p>
+  <form id="rk" method="POST" action="https://auth.robokassa.ru/Merchant/Index.aspx">
+<?php foreach ($params as $k => $v): ?>
+    <input type="hidden" name="<?= htmlspecialchars((string)$k, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8') ?>">
+<?php endforeach; ?>
+    <button type="submit" class="btn">Перейти к оплате</button>
+  </form>
+</div>
+<script>document.getElementById('rk').submit();</script>
+</body></html>
+<?php
 exit;
