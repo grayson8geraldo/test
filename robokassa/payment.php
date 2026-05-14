@@ -108,18 +108,15 @@ $outSum         = number_format($totalAmount, 2, '.', '');
 
 // Формируем Receipt с номенклатурой (требование 54-ФЗ).
 // Без него Робокасса не выставит фискальный чек и часть способов оплаты пропадёт.
-// sno: система налогообложения (osn / usn_income / usn_income_outcome / patent / esn)
-// tax: НДС (none / vat0 / vat10 / vat20 / vat110 / vat120) — для УСН/самозанятых "none"
-$snoSystem = $config['tax_system'] ?? 'usn_income';
-$taxRate   = $config['tax_rate']   ?? 'none';
+// tax обязателен для каждой позиции (none / vat0 / vat10 / vat20 / vat110 / vat120).
+$taxRate = $config['tax_rate'] ?? 'none';
 
 $receipt = [
-    'sno'   => $snoSystem,
     'items' => [
         [
             'name'           => 'Книга «Каркас над пропастью: строю дом на болоте»',
             'quantity'       => 1,
-            'sum'            => (float)$bookPrice,
+            'sum'            => round((float)$bookPrice, 2),
             'payment_method' => 'full_payment',
             'payment_object' => 'commodity',
             'tax'            => $taxRate,
@@ -127,13 +124,19 @@ $receipt = [
         [
             'name'           => 'Доставка СДЭК (' . $delivery['name'] . ')',
             'quantity'       => 1,
-            'sum'            => (float)$delivery['cost'],
+            'sum'            => round((float)$delivery['cost'], 2),
             'payment_method' => 'full_payment',
             'payment_object' => 'service',
             'tax'            => $taxRate,
         ],
     ],
 ];
+
+// СНО передаём ТОЛЬКО если явно задано в config — иначе Робокасса возьмёт
+// значение по умолчанию из настроек ЛКК (это рекомендация документации).
+if (!empty($config['tax_system'])) {
+    $receipt = ['sno' => $config['tax_system']] + $receipt;
+}
 
 $receiptJson = json_encode($receipt, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 // Для подписи Receipt нужно URL-кодировать — это требование документации Робокассы.
