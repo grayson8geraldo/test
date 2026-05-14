@@ -2,8 +2,8 @@
 /**
  * subscribe.php
  *
- * Принимает email из формы лид-магнита, валидирует, сохраняет в список
- * подписчиков и отправляет PDF-фрагмент книги в письме (вложением).
+ * Принимает email из формы лид-магнита, валидирует, добавляет подписчика
+ * в список Unisender и отправляет письмо со ссылкой на PDF-фрагмент книги.
  * AJAX-запрос (X-Requested-With) → JSON, обычный POST → HTML-страница.
  */
 
@@ -64,6 +64,8 @@ HTML;
     exit;
 }
 
+// --- Валидация ---
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     respondAndExit(false, 'Method Not Allowed');
@@ -75,7 +77,7 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     respondAndExit(false, 'Введите корректный email');
 }
 
-// Простой rate-limit по IP — не более 5 подписок с одного IP за 10 минут.
+// Rate-limit по IP — не более 5 подписок с одного IP за 10 минут.
 $ip = $_SERVER['REMOTE_ADDR'] ?? '';
 $rateFile = __DIR__ . '/subscribe-rate.log';
 $now = time();
@@ -102,7 +104,7 @@ foreach ($attempts as $a) {
 }
 @file_put_contents($rateFile, $rateContent, LOCK_EX);
 
-// Сохраняем подписчика в CSV для последующих email-цепочек прогрева
+// Сохраняем подписчика в CSV (бэкап, независимо от Unisender)
 $subscribersFile = __DIR__ . '/subscribers.csv';
 $entry = sprintf(
     "\"%s\",\"%s\",\"%s\"\n",
@@ -112,47 +114,81 @@ $entry = sprintf(
 );
 @file_put_contents($subscribersFile, $entry, FILE_APPEND | LOCK_EX);
 
-// Проверяем наличие PDF
-$pdfPath = __DIR__ . '/bes_material.pdf';
-if (!file_exists($pdfPath)) {
-    respondAndExit(false, 'Файл временно недоступен. Напишите на info@podymakhin.ru');
+// --- Unisender API ---
+
+$uniConfigPath = __DIR__ . '/unisender-config.php';
+if (!file_exists($uniConfigPath)) {
+    respondAndExit(false, 'Сервис рассылки временно недоступен. Напишите на info@podymakhin.ru');
+}
+$uniConfig = require $uniConfigPath;
+
+function unisenderApi(string $method, array $params): ?array {
+    $url = 'https://api.unisender.com/ru/api/' . $method . '?format=json';
+    $context = stream_context_create([
+        'http' => [
+            'method'  => 'POST',
+            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+            'content' => http_build_query($params),
+            'timeout' => 15,
+            'ignore_errors' => true,
+        ],
+    ]);
+    $response = @file_get_contents($url, false, $context);
+    if ($response === false) {
+        return null;
+    }
+    return json_decode($response, true) ?: null;
 }
 
-// Готовим письмо с вложением PDF
-$boundary = md5(uniqid('', true));
-$subject = '=?UTF-8?B?' . base64_encode('Бесплатный фрагмент книги «Каркас над пропастью»') . '?=';
-$fromHeader = '=?UTF-8?B?' . base64_encode('Юрий Подымахин') . '?= <info@podymakhin.ru>';
+// 1. Добавляем контакт в список Unisender
+$subscribeResult = unisenderApi('subscribe', [
+    'api_key'       => $uniConfig['api_key'],
+    'list_ids'      => $uniConfig['list_id'],
+    'fields[email]' => $email,
+    'double_optin'  => 3,
+    'overwrite'     => 2,
+]);
 
-$headers = "From: $fromHeader\r\n"
-         . "Reply-To: info@podymakhin.ru\r\n"
-         . "MIME-Version: 1.0\r\n"
-         . "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n";
+if (!$subscribeResult || isset($subscribeResult['error'])) {
+    $errMsg = $subscribeResult['error'] ?? 'Unisender API недоступен';
+    @file_put_contents(
+        __DIR__ . '/subscribe-errors.log',
+        sprintf("[%s] subscribe error: %s | email=%s\n", date('Y-m-d H:i:s'), $errMsg, $email),
+        FILE_APPEND | LOCK_EX
+    );
+    respondAndExit(false, 'Не удалось оформить подписку. Напишите на info@podymakhin.ru — пришлём вручную.');
+}
 
-$plainText = "Здравствуйте!\r\n\r\n"
-           . "Спасибо за интерес к книге «Каркас над пропастью: строю дом на болоте».\r\n\r\n"
-           . "Во вложении — бесплатный фрагмент книги в формате PDF.\r\n\r\n"
-           . "В полной книге 476 страниц практического опыта строительства каркасного дома "
-           . "на болотистом грунте: от геологии участка до забора. 1 048 фотографий каждого этапа.\r\n\r\n"
-           . "Заказать полное издание: https://podymakhin.ru/#pricing\r\n\r\n"
-           . "С уважением,\r\nЮрий Подымахин\r\nhttps://podymakhin.ru\r\n";
+// 2. Отправляем письмо со ссылкой на PDF через Unisender sendEmail
+$templatePath = __DIR__ . '/email-templates/welcome-pdf-followup.html';
+$htmlBody = @file_get_contents($templatePath);
 
-$pdfContent = chunk_split(base64_encode((string)file_get_contents($pdfPath)));
+if (!$htmlBody) {
+    respondAndExit(false, 'Шаблон письма не найден. Напишите на info@podymakhin.ru');
+}
 
-$body = "--$boundary\r\n"
-      . "Content-Type: text/plain; charset=UTF-8\r\n"
-      . "Content-Transfer-Encoding: 8bit\r\n\r\n"
-      . $plainText . "\r\n"
-      . "--$boundary\r\n"
-      . "Content-Type: application/pdf; name=\"karkas-fragment.pdf\"\r\n"
-      . "Content-Transfer-Encoding: base64\r\n"
-      . "Content-Disposition: attachment; filename=\"karkas-fragment.pdf\"\r\n\r\n"
-      . $pdfContent . "\r\n"
-      . "--$boundary--";
+$sendResult = unisenderApi('sendEmail', [
+    'api_key'      => $uniConfig['api_key'],
+    'email'        => $email,
+    'sender_name'  => $uniConfig['sender_name'],
+    'sender_email' => $uniConfig['sender_email'],
+    'subject'      => 'Ваш фрагмент книги «Каркас над пропастью»',
+    'body'         => $htmlBody,
+    'list_id'      => $uniConfig['list_id'],
+]);
 
-$sent = @mail($email, $subject, $body, $headers);
+if (!$sendResult || isset($sendResult['error'])) {
+    $errMsg = $sendResult['error'] ?? 'sendEmail failed';
+    @file_put_contents(
+        __DIR__ . '/subscribe-errors.log',
+        sprintf("[%s] sendEmail error: %s | email=%s\n", date('Y-m-d H:i:s'), $errMsg, $email),
+        FILE_APPEND | LOCK_EX
+    );
+    respondAndExit(false, 'Подписка оформлена, но письмо не отправилось. Напишите на info@podymakhin.ru — пришлём вручную.');
+}
 
-// Уведомляем администратора о новой подписке
-$adminBody = "Новая подписка на PDF-фрагмент:\n\n"
+// 3. Уведомляем администратора (через обычный mail — это серверное уведомление)
+$adminBody = "Новая подписка на PDF-фрагмент (Unisender):\n\n"
            . "Email: $email\n"
            . "IP: $ip\n"
            . "Дата: " . date('Y-m-d H:i:s') . "\n";
@@ -161,8 +197,4 @@ $adminHeaders = "From: noreply@podymakhin.ru\r\n"
               . "Content-Type: text/plain; charset=UTF-8\r\n";
 @mail('info@podymakhin.ru', $adminSubject, $adminBody, $adminHeaders);
 
-if ($sent) {
-    respondAndExit(true);
-} else {
-    respondAndExit(false, 'Не удалось отправить письмо. Напишите на info@podymakhin.ru — пришлём вручную.');
-}
+respondAndExit(true);

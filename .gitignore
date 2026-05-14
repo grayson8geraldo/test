@@ -1,12 +1,16 @@
 # Секреты Робокассы — не коммитим
 /robokassa/config.php
 
+# Секреты Unisender — не коммитим
+/unisender-config.php
+
 # Логи заказов
 /robokassa/*.log
 
 # Подписчики PDF-фрагмента и rate-limit
 /subscribers.csv
 /subscribe-rate.log
+/subscribe-errors.log
 
 # Системные файлы
 .DS_Store
