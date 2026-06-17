@@ -563,15 +563,10 @@ function initSubscribeForm() {
 // ===== REVIEW TOGGLE (Читать полностью / Свернуть) =====
 function initReviewToggle() {
     document.querySelectorAll('.review-card__text').forEach(function (text) {
-        // Сначала замеряем полную высоту
-        var fullHeight = text.scrollHeight;
         text.classList.add('is-clamped');
 
-        // Ждём рендера, чтобы замерить обрезанную высоту
         requestAnimationFrame(function () {
-            var clampedHeight = text.clientHeight;
-            // Если текст обрезался — добавляем кнопку
-            if (fullHeight > clampedHeight + 2) {
+            if (text.scrollHeight > text.clientHeight + 2) {
                 var btn = document.createElement('button');
                 btn.className = 'review-card__toggle';
                 btn.textContent = 'Читать полностью';
