@@ -493,13 +493,18 @@ function initOrderForm() {
 
 // ===== SUBSCRIBE FORM (PDF lead magnet) =====
 function initSubscribeForm() {
-    const form = document.getElementById('subscribeForm');
+    setupSubscribeForm('subscribeForm', 'subscribeEmail', 'subscribeError', 'subscribeSuccess', 'subscribeBtn');
+    setupSubscribeForm('subscribeFormBottom', 'subscribeEmailBottom', 'subscribeErrorBottom', 'subscribeSuccessBottom', 'subscribeBtnBottom');
+}
+
+function setupSubscribeForm(formId, emailId, errorId, successId, btnId) {
+    var form = document.getElementById(formId);
     if (!form) return;
 
-    const emailInput = document.getElementById('subscribeEmail');
-    const errorEl = document.getElementById('subscribeError');
-    const successEl = document.getElementById('subscribeSuccess');
-    const submitBtn = document.getElementById('subscribeBtn');
+    var emailInput = document.getElementById(emailId);
+    var errorEl = document.getElementById(errorId);
+    var successEl = document.getElementById(successId);
+    var submitBtn = document.getElementById(btnId);
 
     function showError(msg) {
         errorEl.textContent = msg;
@@ -518,19 +523,19 @@ function initSubscribeForm() {
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
-        const email = emailInput.value.trim();
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        var email = emailInput.value.trim();
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
         if (!email) { showError('Введите email'); return; }
         if (!emailRegex.test(email)) { showError('Введите корректный email'); return; }
 
         clearError();
 
-        const originalBtnHTML = submitBtn.innerHTML;
+        var originalBtnHTML = submitBtn.innerHTML;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправляем…';
 
-        const formData = new FormData();
+        var formData = new FormData();
         formData.append('email', email);
 
         fetch('/subscribe.php', {
